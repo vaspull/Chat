@@ -177,30 +177,18 @@ int main()
     char buff[1024];
     memset(buff,0,1024);
     send(Connect,res2, 1024, 0);
-//    recv(Connect,buff, 1024,0);
-//    if(buff == "access denied\n"){
-//        closesocket(Connect);
-//        WSACleanup();
-//        getchar();
-//        return 0;
-//    }
-//    else {
-//       printf("Connection on chat server: %s is stable\n\n",SERVERADDR);
-//    }
+
     for (int clear666 = 0; buff[clear666] != 0; clear666++) buff[clear666] = '\0';
 
-printf("Connection on chat server: %s is stable\n\n",SERVERADDR);
+    printf("Connection on chat server: %s is stable\n\n",SERVERADDR);
 
-  //  char buff[1024];
-   // memset(buff,0,1024);
+
     for(;;Sleep(75))
     {
         if(recv(Connect,buff, 1024,0) !=SOCKET_ERROR){
             CreateThread(0,0,(LPTHREAD_START_ROUTINE)ReadMessageFromServer,0,0,0);
             CreateThread(0,0,(LPTHREAD_START_ROUTINE)WriteMessageToServer,(LPVOID)res2,0,0);
             for (int clear666 = 0; buff[clear666] != 0; clear666++) buff[clear666] = '\0';
-            //memset(buff,0,sizeof(buff));
-            //free(buff);
         }
     }
     return 1;
