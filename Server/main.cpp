@@ -91,6 +91,7 @@ void SendMessageToClient(int ID)
 
         if (recv(Connections[ID], buffer, 1024, 0))
         {
+            char buff[1024] = "";
             char res[1024] = "";
             char pwd[1024] = "";
             char name[1024] = "";
@@ -110,15 +111,27 @@ void SendMessageToClient(int ID)
             }
             else {
                 send(Connections[ID], "access denied\n", 1024, 0);
+                while(recv(Connections[ID], buff, 1024, 0)!=-1);
+                    closesocket(Connections[ID]);
             }
-            delete[] buffer;
-            delete[] name;
-            delete[] pwd;
-            delete[] text;
-            delete[] res;
+            for (int clear666 = 0; buff[clear666] != 0; clear666++) buff[clear666] = '\0';
+            int clear = 0;
+            while(buffer[clear]) buffer[clear++] = '\0';
+            clear = 0;
+            while(name[clear]) name[clear++] = '\0';
+            clear = 0;
+            while(name[clear]) name[clear++] = '\0';
+            clear = 0;
+            while(name[clear]) name[clear++] = '\0';
+            clear = 0;
+            while(name[clear]) name[clear++] = '\0';
+            clear = 0;
         }
         else {
-            closesocket(Connections[ID]);
+            char buff[1024] = "";
+            for (int clear666 = 0; buff[clear666] != 0; clear666++) buff[clear666] = '\0';
+            while(recv(Connections[ID], buff, 1024, 0)!=-1);
+                closesocket(Connections[ID]);
         }
     }
     free(buffer);

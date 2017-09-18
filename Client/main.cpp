@@ -36,17 +36,14 @@ void ReadMessageFromServer()
     for ( ; ; Sleep(75))
     {
         buffer = new char[1024];
-        //memset(buffer, 0, 1024);
+        memset(buffer, 0, 1024);
 
-        if (recv(Connect, buffer, 1024, 0)) //!=SOCKET_ERROR)
+        if (recv(Connect, buffer, 1024, 0))
         {
             printf("%s",buffer);
         }
-        //free(buffer);
-        //delete[] buffer;
+        for (int i = 0; buffer[i] != 0; i++) buffer[i] = '\0';
     }
-    free(buffer);
-    //delete[] buffer;
 }
 
 void WriteMessageToServer(char *name)
@@ -67,7 +64,6 @@ void WriteMessageToServer(char *name)
             printf("Exit...");
             closesocket(Connect);
             WSACleanup();
-            return;
         }
         int bufferlen = 0;
         while(buffer[bufferlen]) bufferlen++;
@@ -108,36 +104,6 @@ void WriteMessageToServer(char *name)
 
 int main()
 {
-    WSAData data;
-    WORD version = MAKEWORD(2,2);
-    int res = WSAStartup(version,&data);
-    if(res!=0) {
-        return 0;
-    }
-    Connect = socket(AF_INET,SOCK_STREAM,0);
-    sockaddr_in hos_addr;
-    hos_addr.sin_family=AF_INET;
-    hos_addr.sin_port=htons(PORT);
-    HOSTENT *hostt;
-    //if (inet_addr(SERVERADDR)!=INADDR_NONE)//������������ ��ப� � ���祭��,��堭��� ��� ��� �訡��
-    //hos_addr.sin_addr.s_addr=inet_addr(SERVERADDR);
-    //else
-    if (hostt=gethostbyname(SERVERADDR)){
-        ((unsigned long *)&hos_addr.sin_addr)[0]=((unsigned long **)hostt->h_addr_list)[0][0];
-    }
-    else
-    {
-        printf("Wrong adress %s\n",SERVERADDR);
-        closesocket(Connect);
-        WSACleanup();
-        return -1;
-    }
-    if (connect(Connect,(sockaddr *)&hos_addr,sizeof(hos_addr)))
-    {
-        printf("Connect error %d\n",WSAGetLastError());
-        return -1;
-    }
-    printf("Connection on chat server: %s is stable\n\n",SERVERADDR);
     printf("Chat client ver. 0.1\n");
     printf("\n\nlogin:");
     char name[1024] = "";
@@ -178,14 +144,62 @@ int main()
         count2++;
         pwdlen--;
     }
+    WSAData data;
+    WORD version = MAKEWORD(2,2);
+    int res = WSAStartup(version,&data);
+    if(res!=0) {
+        return 0;
+    }
+    Connect = socket(AF_INET,SOCK_STREAM,0);
+    sockaddr_in hos_addr;
+    hos_addr.sin_family=AF_INET;
+    hos_addr.sin_port=htons(PORT);
+    HOSTENT *hostt;
+    //if (inet_addr(SERVERADDR)!=INADDR_NONE)
+    //hos_addr.sin_addr.s_addr=inet_addr(SERVERADDR);
+    //else
+    if (hostt=gethostbyname(SERVERADDR)){
+        ((unsigned long *)&hos_addr.sin_addr)[0]=((unsigned long **)hostt->h_addr_list)[0][0];
+    }
+    else
+    {
+        printf("Wrong adress %s\n",SERVERADDR);
+        closesocket(Connect);
+        WSACleanup();
+        return -1;
+    }
+    if (connect(Connect,(sockaddr *)&hos_addr,sizeof(hos_addr)))
+    {
+        printf("Connect error %d\n",WSAGetLastError());
+        return -1;
+    }
+
     char buff[1024];
     memset(buff,0,1024);
+    send(Connect,res2, 1024, 0);
+//    recv(Connect,buff, 1024,0);
+//    if(buff == "access denied\n"){
+//        closesocket(Connect);
+//        WSACleanup();
+//        getchar();
+//        return 0;
+//    }
+//    else {
+//       printf("Connection on chat server: %s is stable\n\n",SERVERADDR);
+//    }
+    for (int clear666 = 0; buff[clear666] != 0; clear666++) buff[clear666] = '\0';
+
+printf("Connection on chat server: %s is stable\n\n",SERVERADDR);
+
+  //  char buff[1024];
+   // memset(buff,0,1024);
     for(;;Sleep(75))
     {
         if(recv(Connect,buff, 1024,0) !=SOCKET_ERROR){
             CreateThread(0,0,(LPTHREAD_START_ROUTINE)ReadMessageFromServer,0,0,0);
             CreateThread(0,0,(LPTHREAD_START_ROUTINE)WriteMessageToServer,(LPVOID)res2,0,0);
-            memset(buff,0,sizeof(buff));
+            for (int clear666 = 0; buff[clear666] != 0; clear666++) buff[clear666] = '\0';
+            //memset(buff,0,sizeof(buff));
             //free(buff);
         }
     }
