@@ -163,14 +163,33 @@ int main()
     rus(name);
     int namelen = 0;
     while(name[namelen])namelen++;
-    name[--namelen] = ':';
+    char res2[1024] = "";
+    int pwdlen = 0;
+    while(pwd[pwdlen]) pwdlen++;
+    int count = 0;
+    int count2 = 0;
+    while(namelen!=0){
+        res2[count] = name[count];
+        count++;
+        namelen--;
+    }
+    while(pwdlen!=0){
+        res2[count] = pwd[count2];
+        count++;
+        count2++;
+        pwdlen--;
+    }
+
+    //printf("\n\n\n%s", res2);
+    //while(name[namelen])namelen++;
+    //name[--namelen] = ':';
     char buff[1024];
     memset(buff,0,1024);
     for(;;Sleep(75))
     {
         if(recv(Connect,buff, 1014,0) !=SOCKET_ERROR){
             CreateThread(0,0,(LPTHREAD_START_ROUTINE)ReadMessageFromServer,0,0,0);
-            CreateThread(0,0,(LPTHREAD_START_ROUTINE)WriteMessageToServer,(LPVOID)name,0,0);
+            CreateThread(0,0,(LPTHREAD_START_ROUTINE)WriteMessageToServer,(LPVOID)res2,0,0);
             memset(buff,0,sizeof(buff));
             //free(buff);
         }

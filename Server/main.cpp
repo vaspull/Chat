@@ -1,6 +1,6 @@
 #include <ws2tcpip.h>
 #include <iostream>
-#pragma comment(lib,"ws2_32.lib")
+//#pragma comment(lib,"ws2_32.lib")
 #include <winsock2.h>
 
 
@@ -12,6 +12,58 @@ SOCKET Listen;
 
 int ClientCount = 0;
 
+void parce(char *buffer, char *name, char *pwd, char *text, char *res)
+{
+
+    int g = 0;
+    int c = 0;
+    int d = 0;
+    while(buffer[g]!='\n')g++;
+    d = g;
+    d++;
+    while(g>0){
+        name[c] = buffer[c];
+        c++;
+        g--;
+    }
+    name[c] = '\0';
+    c = 0;
+    while(buffer[d]!='\n'){
+        pwd[c] = buffer[d];
+        c++;
+        d++;
+    }
+    d++;
+    pwd[c]='\0';
+    c = 0;
+    while(buffer[d]){
+        text[c] = buffer[d];
+        d++;
+        c++;
+    }
+    int namelen = 0;
+    while(name[namelen]) namelen++;
+    int textlen = 0;
+    while(text[textlen]) textlen++;
+    int count = 0;
+    int count2 = 0;
+    while(namelen!=0){
+        res[count] = name[count];
+        count++;
+        namelen--;
+    }
+    res[count] = ':';
+    count++;
+    while(textlen!=0){
+        res[count] = text[count2];
+        count++;
+        count2++;
+        textlen--;
+    }
+
+}
+
+
 void SendMessageToClient(int ID)
 {
     char * buffer;
@@ -19,16 +71,24 @@ void SendMessageToClient(int ID)
     for ( ; ; Sleep(750))
     {
         buffer = new char[1024];
-        memset(buffer, 0, sizeof(buffer)); //заполняет буфер символами "0"
+        memset(buffer, 0, 1024); //заполняет буфер символами "0"
 
-        if (recv(Connections[ID], buffer, 1024, NULL))
+        if (recv(Connections[ID], buffer, 1024, 0))
         {
+            char res[1024] = "";
+            char pwd[1024] = "";
+            char name[1024] = "";
+            char text[1024] = "";
+            parce(buffer, name, pwd, text, res);
             printf("client id %d: ", ID);
-            printf("%s",buffer);
+            printf("%s",res);
+
+
+
             for (int i = 0; i <= ClientCount; i++) //Отправка каждому подключенному клиенту
             {
                 if (i!=ID){
-                send(Connections[i], buffer, strlen(buffer), NULL);
+                send(Connections[i], res, 1024, 0);
                 }
                 else {
                 }
@@ -73,13 +133,13 @@ int main()
     for(;;Sleep(75))
     {
 
-        if(Connect = accept(Listen,NULL,NULL))
+        if(Connect = accept(Listen,0,0))
         {
             printf("Client id:%d connect...\n", ClientCount);
             Connections[ClientCount] = Connect;
-            send(Connections[ClientCount],m_connect,strlen(m_connect),NULL);
+            send(Connections[ClientCount],m_connect,strlen(m_connect),0);
             ClientCount++;
-            CreateThread(NULL,NULL,(LPTHREAD_START_ROUTINE)SendMessageToClient,(LPVOID)(ClientCount-1),NULL,NULL);
+            CreateThread(0,0,(LPTHREAD_START_ROUTINE)SendMessageToClient,(LPVOID)(ClientCount-1),0,0);
         }
     }
 
