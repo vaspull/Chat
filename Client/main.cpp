@@ -140,9 +140,26 @@ int main()
     }
     printf("Connection on chat server: %s is stable\n\n",SERVERADDR);
     printf("Chat client ver. 0.1\n");
-    printf("\n\nYour nickname?:");
+    printf("\n\nlogin:");
     char name[1024] = "";
+    char pwd[1024] = "";
     fgets(name,1024, stdin);
+    printf("password:");
+    int i = 0;
+    for(i=0;(pwd[i] = getch()) != '\r';)   {
+        if(pwd[i]=='\b' && i!=0) {
+            printf("%s", "\b \b");
+            i--;
+        }
+        else if(pwd[i]!='\b') {
+            printf("%c", '*');
+            i++;
+        }
+    }
+    pwd[i] = '\n';
+    i++;
+    pwd[i] = '\0';
+    printf("\n");
     rus(name);
     int namelen = 0;
     while(name[namelen])namelen++;
