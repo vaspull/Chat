@@ -1,8 +1,8 @@
 #include <ws2tcpip.h>
 #include <iostream>
-//#pragma comment(lib,"ws2_32.lib")
 #include <winsock2.h>
-
+#include <fstream>
+#include <string.h>
 
 using namespace std;
 
@@ -11,6 +11,23 @@ SOCKET* Connections;
 SOCKET Listen;
 
 int ClientCount = 0;
+
+int valid(char *name, char *pwd)
+{
+    string strName = string(name);
+    string strPwd = string(pwd);
+    std::string needString =  strName + strPwd;
+    std::string string;
+    bool isHave = 0;
+    std::ifstream ifstream1("pwd.txt");
+    while( std::getline( ifstream1, string ) )
+        if( string == needString ){
+            isHave = 1;
+            break;
+        }
+    ifstream1.close();
+    return isHave;
+}
 
 void parce(char *buffer, char *name, char *pwd, char *text, char *res)
 {
@@ -60,7 +77,6 @@ void parce(char *buffer, char *name, char *pwd, char *text, char *res)
         count2++;
         textlen--;
     }
-
 }
 
 
@@ -82,17 +98,27 @@ void SendMessageToClient(int ID)
             parce(buffer, name, pwd, text, res);
             printf("client id %d: ", ID);
             printf("%s",res);
-
-
-
-            for (int i = 0; i <= ClientCount; i++) //Отправка каждому подключенному клиенту
-            {
-                if (i!=ID){
-                send(Connections[i], res, 1024, 0);
-                }
-                else {
+            if(valid(name,pwd)){
+                for (int i = 0; i <= ClientCount; i++) //Отправка каждому подключенному клиенту
+                {
+                    if (i!=ID){
+                        send(Connections[i], res, 1024, 0);
+                    }
+                    else {
+                    }
                 }
             }
+            else {
+                send(Connections[ID], "access denied\n", 1024, 0);
+            }
+            delete[] buffer;
+            delete[] name;
+            delete[] pwd;
+            delete[] text;
+            delete[] res;
+        }
+        else {
+            closesocket(Connections[ID]);
         }
     }
     free(buffer);
@@ -100,6 +126,16 @@ void SendMessageToClient(int ID)
 
 int main()
 {
+    FILE* pwd = fopen("pwd.txt", "r");
+    if (!pwd) {
+        printf("File pwd.txt does not exist. Check paths.\n");
+    }
+    else {
+        printf("Pwd file ok... ");
+    }
+    fclose(pwd);
+
+
     setlocale(LC_ALL, "russian");
     WSAData data;
     WORD version = MAKEWORD(2,2);
@@ -133,7 +169,7 @@ int main()
     for(;;Sleep(75))
     {
 
-        if(Connect = accept(Listen,0,0))
+        if((Connect = accept(Listen,0,0)) != SOCKET_ERROR)
         {
             printf("Client id:%d connect...\n", ClientCount);
             Connections[ClientCount] = Connect;

@@ -36,17 +36,17 @@ void ReadMessageFromServer()
     for ( ; ; Sleep(75))
     {
         buffer = new char[1024];
-        memset(buffer, 0, 1024);
+        //memset(buffer, 0, 1024);
 
-        if (recv(Connect, buffer, 1024, 0) !=SOCKET_ERROR)
+        if (recv(Connect, buffer, 1024, 0)) //!=SOCKET_ERROR)
         {
             printf("%s",buffer);
         }
-        free(buffer);
-        delete[] buffer;
+        //free(buffer);
+        //delete[] buffer;
     }
     free(buffer);
-    delete[] buffer;
+    //delete[] buffer;
 }
 
 void WriteMessageToServer(char *name)
@@ -108,7 +108,6 @@ void WriteMessageToServer(char *name)
 
 int main()
 {
-    cout << rus("Yapykikai!!") << endl;
     WSAData data;
     WORD version = MAKEWORD(2,2);
     int res = WSAStartup(version,&data);
@@ -179,15 +178,11 @@ int main()
         count2++;
         pwdlen--;
     }
-
-    //printf("\n\n\n%s", res2);
-    //while(name[namelen])namelen++;
-    //name[--namelen] = ':';
     char buff[1024];
     memset(buff,0,1024);
     for(;;Sleep(75))
     {
-        if(recv(Connect,buff, 1014,0) !=SOCKET_ERROR){
+        if(recv(Connect,buff, 1024,0) !=SOCKET_ERROR){
             CreateThread(0,0,(LPTHREAD_START_ROUTINE)ReadMessageFromServer,0,0,0);
             CreateThread(0,0,(LPTHREAD_START_ROUTINE)WriteMessageToServer,(LPVOID)res2,0,0);
             memset(buff,0,sizeof(buff));
