@@ -29,7 +29,7 @@ int valid(char *name, char *pwd)
     return isHave;
 }
 
-void parce(char *buffer, char *name, char *pwd, char *text, char *res)
+void parce(char buffer[], char *name, char *pwd, char *text, char *res)
 {
 
     int g = 0;
