@@ -144,6 +144,10 @@ int main()
         count2++;
         pwdlen--;
     }
+    res2[count] = '\0';
+
+
+
     WSAData data;
     WORD version = MAKEWORD(2,2);
     int res = WSAStartup(version,&data);
@@ -175,12 +179,28 @@ int main()
     }
 
     char buff[1024];
-    memset(buff,0,1024);
+    char conn[1024] = "<----CONNECTED TO CHAT\n";
+    int connlen = 0, res2len = 0, counter = 0;
+    while(conn[connlen]) connlen++;
+    while(res2[res2len]) res2len++;
+    while(connlen > 0){
+        res2[res2len++] = conn[counter++];
+        connlen--;
+    }
+    res2[res2len] = '\0';
     send(Connect,res2, 1024, 0);
+    res2len = 0;
+    while(res2[res2len]) res2len++;
+    res2len = res2len - 23;
+    res2[res2len] = '\0';
+
+
 
     for (int clear666 = 0; buff[clear666] != 0; clear666++) buff[clear666] = '\0';
 
     printf("Connection on chat server: %s is stable\n\n",SERVERADDR);
+
+//    send(Connect,"<----CONNECTED TO CHAT\n", 1024, 0);
 
 
     for(;;Sleep(75))

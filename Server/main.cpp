@@ -29,57 +29,35 @@ int valid(char *name, char *pwd)
     return isHave;
 }
 
-void parce(char buffer[], char *name, char *pwd, char *text, char *res)
+void parce(char (&buffer)[1024], char (&name)[1024], char (&pwd)[1024], char (&text)[1024], char (&res)[1024])
 {
 
     int g = 0;
     int c = 0;
- //   int d = 0;
-    while(buffer[g] != '\n'){
-        name[c] = buffer[g];
+    if(buffer[0]!='\0'){
+        while(buffer[g] != '\n'){
+            name[c] = buffer[g];
+            g++;
+            c++;
+        }
+        name[c]='\0';
         g++;
-        c++;
-    }
-    name[c]='\0';
-    g++;
-    c=0;
-     while(buffer[g] != '\n'){
-         pwd[c] = buffer[g];
-         g++;
-         c++;
-     }
-     pwd[c]='\0';
-     g++;
-     c=0;
-    while(buffer[g]){
-        text[c] = buffer[g];
+        c=0;
+        while(buffer[g] != '\n'){
+            pwd[c] = buffer[g];
+            g++;
+            c++;
+        }
+        pwd[c]='\0';
         g++;
-        c++;
+        c=0;
+        while(buffer[g]){
+            text[c] = buffer[g];
+            g++;
+            c++;
+        }
+        text[c]='\0';
     }
-    text[c]='\0';
-//    while(buffer[g]!='\n')g++;
-//    d = g;
-//    d++;
-//    while(g>0){
-//        name[c] = buffer[c];
-//        c++;
-//        g--;
-//    }
-//    name[c] = '\0';
-//    c = 0;
-//    while(buffer[d]!='\n'){
-//        pwd[c] = buffer[d];
-//        c++;
-//        d++;
-//    }
-//    d++;
-//    pwd[c]='\0';
-//    c = 0;
-//    while(buffer[d]){
-//        text[c] = buffer[d];
-//        d++;
-//        c++;
-//    }
     int namelen = 0;
     while(name[namelen]) namelen++;
     int textlen = 0;
@@ -104,12 +82,8 @@ void parce(char buffer[], char *name, char *pwd, char *text, char *res)
 
 void SendMessageToClient(int ID)
 {
- //   char * buffer;
-
     for ( ; ; Sleep(750))
     {
- //       buffer = new char[1024];
- //       memset(buffer, 0, 1024); //заполняет буфер символами "0"
         char buffer[1024] = "";
         for (int clear666 = 0; buffer[clear666] != 0; clear666++) buffer[clear666] = '\0';
         if (recv(Connections[ID], buffer, 1024, 0))
@@ -120,13 +94,17 @@ void SendMessageToClient(int ID)
             char name[1024] = "";
             char text[1024] = "";
             parce(buffer, name, pwd, text, res);
-            printf("client id %d: ", ID);
-            printf("%s",res);
-            if(valid(name,pwd)){
+            if(res[0] != ':') {
+                printf("client id %d: ", ID);
+                printf("%s",res);
+            }
+            else {
+            }
+            if((valid(name,pwd) == 1) && (res[0] != ':')){
                 for (int i = 0; i <= ClientCount; i++) //Отправка каждому подключенному клиенту
                 {
                     if (i!=ID){
-                        send(Connections[i], name, 1024, 0);
+                        send(Connections[i], res, 1024, 0);
                     }
                     else {
                     }
@@ -136,7 +114,7 @@ void SendMessageToClient(int ID)
                 send(Connections[ID], "access denied\n", 1024, 0);
                 shutdown(Connections[ID],2);
                 while(recv(Connections[ID], buff, 1024, 0)!=-1);
-                    closesocket(Connections[ID]);
+                closesocket(Connections[ID]);
             }
             for (int clear666 = 0; buff[clear666] != 0; clear666++) buff[clear666] = '\0';
             int clear = 0;
@@ -156,10 +134,9 @@ void SendMessageToClient(int ID)
             for (int clear666 = 0; buff[clear666] != 0; clear666++) buff[clear666] = '\0';
             shutdown(Connections[ID],2);
             while(recv(Connections[ID], buff, 1024, 0)!=-1);
-                closesocket(Connections[ID]);
+            closesocket(Connections[ID]);
         }
     }
- //   free(buffer);
 }
 
 int main()
