@@ -64,6 +64,8 @@ void WriteMessageToServer(char *name)
             printf("Exit...");
             closesocket(Connect);
             WSACleanup();
+            exit(0);
+            break;
         }
         int bufferlen = 0;
         while(buffer[bufferlen]) bufferlen++;
@@ -91,12 +93,8 @@ void WriteMessageToServer(char *name)
             res[clear2] = 0;
             clear2++;
         }
-        free(buffer);
-        delete[] buffer;
         namelen = b;
     }
-    free(buffer);
-    delete[] buffer;
 }
 
 
@@ -104,13 +102,13 @@ void WriteMessageToServer(char *name)
 
 int main()
 {
+    int i = 0, connlen = 0, res2len = 0, counter = 0, namelen = 0, pwdlen = 0, count = 0, count2 = 0;
+    char buff[1024], res2[1024], name[1024], pwd[1024];
+    char conn[1024] = "<----CONNECTED TO CHAT\n";
     printf("Chat client ver. 0.1\n");
     printf("\n\nlogin:");
-    char name[1024] = "";
-    char pwd[1024] = "";
     fgets(name,1024, stdin);
     printf("password:");
-    int i = 0;
     for(i=0;(pwd[i] = getch()) != '\r';)   {
         if(pwd[i]=='\b' && i!=0) {
             printf("%s", "\b \b");
@@ -126,13 +124,8 @@ int main()
     pwd[i] = '\0';
     printf("\n");
     rus(name);
-    int namelen = 0;
     while(name[namelen])namelen++;
-    char res2[1024] = "";
-    int pwdlen = 0;
     while(pwd[pwdlen]) pwdlen++;
-    int count = 0;
-    int count2 = 0;
     while(namelen!=0){
         res2[count] = name[count];
         count++;
@@ -145,8 +138,6 @@ int main()
         pwdlen--;
     }
     res2[count] = '\0';
-
-
 
     WSAData data;
     WORD version = MAKEWORD(2,2);
@@ -178,9 +169,6 @@ int main()
         return -1;
     }
 
-    char buff[1024];
-    char conn[1024] = "<----CONNECTED TO CHAT\n";
-    int connlen = 0, res2len = 0, counter = 0;
     while(conn[connlen]) connlen++;
     while(res2[res2len]) res2len++;
     while(connlen > 0){
@@ -193,16 +181,8 @@ int main()
     while(res2[res2len]) res2len++;
     res2len = res2len - 23;
     res2[res2len] = '\0';
-
-
-
     for (int clear666 = 0; buff[clear666] != 0; clear666++) buff[clear666] = '\0';
-
     printf("Connection on chat server: %s is stable\n\n",SERVERADDR);
-
-//    send(Connect,"<----CONNECTED TO CHAT\n", 1024, 0);
-
-
     for(;;Sleep(75))
     {
         if(recv(Connect,buff, 1024,0) !=SOCKET_ERROR){
@@ -210,6 +190,18 @@ int main()
             CreateThread(0,0,(LPTHREAD_START_ROUTINE)WriteMessageToServer,(LPVOID)res2,0,0);
             for (int clear666 = 0; buff[clear666] != 0; clear666++) buff[clear666] = '\0';
         }
+        else {
+            break;
+        }
     }
+    for (int clear666 = 0; buff[clear666] != 0; clear666++) buff[clear666] = '\0';
+    for (int clear666 = 0; res2[clear666] != 0; clear666++) res2[clear666] = '\0';
+    for (int clear666 = 0; conn[clear666] != 0; clear666++) conn[clear666] = '\0';
+    for (int clear666 = 0; name[clear666] != 0; clear666++) name[clear666] = '\0';
+    for (int clear666 = 0; pwd[clear666] != 0; clear666++) pwd[clear666] = '\0';
+    shutdown(Connect,2);
+    closesocket(Connect);
+    WSACleanup();
+    printf("Exit...\n");
     return 1;
 }

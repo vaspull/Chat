@@ -111,7 +111,7 @@ void SendMessageToClient(int ID)
                 }
             }
             else {
-                send(Connections[ID], "access denied\n", 1024, 0);
+                send(Connections[ID], "access denied, push enter to continue\n", 1024, 0);
                 shutdown(Connections[ID],2);
                 while(recv(Connections[ID], buff, 1024, 0)!=-1);
                 closesocket(Connections[ID]);
@@ -155,14 +155,12 @@ int main()
     WSAData data;
     WORD version = MAKEWORD(2,2);
     int res = WSAStartup(version,&data);
-    if(res!=0)
-    {
+    if(res!=0)  {
         return 0;
     }
 
     struct addrinfo hints;
     struct addrinfo * result;
-
 
     Connections = (SOCKET*)calloc(64,sizeof(SOCKET));
     ZeroMemory(&hints,sizeof(hints));
@@ -170,9 +168,7 @@ int main()
     hints.ai_flags = AI_PASSIVE;
     hints.ai_socktype = SOCK_STREAM;
     hints.ai_protocol = IPPROTO_TCP;
-
     getaddrinfo(NULL,"7770", &hints,&result);
-
     Listen = socket(result->ai_family, result->ai_socktype,result->ai_protocol);
     bind(Listen,result->ai_addr,result->ai_addrlen);
     listen(Listen,SOMAXCONN);
@@ -181,11 +177,8 @@ int main()
 
     printf("Start server...\n");
     char m_connect[] = "asd";
-    for(;;Sleep(75))
-    {
-
-        if((Connect = accept(Listen,0,0)) != SOCKET_ERROR)
-        {
+    for(;;Sleep(75)) {
+        if((Connect = accept(Listen,0,0)) != SOCKET_ERROR) {
             printf("Client id:%d connect...\n", ClientCount);
             Connections[ClientCount] = Connect;
             send(Connections[ClientCount],m_connect,strlen(m_connect),0);
@@ -193,7 +186,6 @@ int main()
             CreateThread(0,0,(LPTHREAD_START_ROUTINE)SendMessageToClient,(LPVOID)(ClientCount-1),0,0);
         }
     }
-
     return 1;
 }
 
