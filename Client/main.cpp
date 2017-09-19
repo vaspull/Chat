@@ -103,11 +103,12 @@ void WriteMessageToServer(char *name)
 int main()
 {
     int i = 0, connlen = 0, res2len = 0, counter = 0, namelen = 0, pwdlen = 0, count = 0, count2 = 0;
-    char buff[1024], res2[1024], name[1024], pwd[1024];
+    char buff[1024] = "", res2[1024] = "", name[1024] = "", pwd[1024] = "";
     char conn[1024] = "<----CONNECTED TO CHAT\n";
     printf("Chat client ver. 0.1\n");
+    again:
     printf("\n\nlogin:");
-    fgets(name,1024, stdin);
+    fgets(name,2000, stdin);
     printf("password:");
     for(i=0;(pwd[i] = getch()) != '\r';)   {
         if(pwd[i]=='\b' && i!=0) {
@@ -199,6 +200,7 @@ int main()
     for (int clear666 = 0; conn[clear666] != 0; clear666++) conn[clear666] = '\0';
     for (int clear666 = 0; name[clear666] != 0; clear666++) name[clear666] = '\0';
     for (int clear666 = 0; pwd[clear666] != 0; clear666++) pwd[clear666] = '\0';
+    i = 0, connlen = 0, res2len = 0, counter = 0, namelen = 0, pwdlen = 0, count = 0, count2 = 0;
     shutdown(Connect,2);
     closesocket(Connect);
     WSACleanup();
