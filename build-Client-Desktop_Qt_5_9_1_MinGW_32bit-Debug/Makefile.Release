@@ -96,7 +96,7 @@ compiler_clean:
 
 ####### Compile
 
-release/main.o: ../Client/main.cpp 
+release/main.o: ../Client/main.cpp ../Client/crypto.cpp
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o release\main.o ..\Client\main.cpp
 
 ####### Install

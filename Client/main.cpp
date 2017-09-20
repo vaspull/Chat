@@ -9,12 +9,13 @@
 #include <stdio.h>
 #include <clocale>
 #include <limits.h>
-
+#include <crypto.cpp>
 
 
 using namespace std;
 
 SOCKET Connect;
+char key[1024]="key";
 
 char* rus(char* st)
 {
@@ -82,6 +83,7 @@ void WriteMessageToServer(char *name)
             count2++;
             bufferlen--;
         }
+        shifr(res,key);
         send(Connect,res,1024,0);
         int clear = 0;
         while(res[clear]){
@@ -97,16 +99,12 @@ void WriteMessageToServer(char *name)
     }
 }
 
-
-
-
 int main()
 {
     int i = 0, connlen = 0, res2len = 0, counter = 0, namelen = 0, pwdlen = 0, count = 0, count2 = 0;
     char buff[1024] = "", res2[1024] = "", name[1024] = "", pwd[1024] = "";
     char conn[1024] = "<----CONNECTED TO CHAT\n";
     printf("Chat client ver. 0.1\n");
-    again:
     printf("\n\nlogin:");
     fgets(name,2000, stdin);
     printf("password:");
@@ -177,7 +175,9 @@ int main()
         connlen--;
     }
     res2[res2len] = '\0';
+    shifr(res2,key);
     send(Connect,res2, 1024, 0);
+    deshifr(res2,key);
     res2len = 0;
     while(res2[res2len]) res2len++;
     res2len = res2len - 23;

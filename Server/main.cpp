@@ -3,13 +3,14 @@
 #include <winsock2.h>
 #include <fstream>
 #include <string.h>
+#include <crypto.cpp>
 
 using namespace std;
 
 SOCKET Connect;
 SOCKET* Connections;
 SOCKET Listen;
-
+char key[1024] = "key";
 int ClientCount = 0;
 
 int valid(char *name, char *pwd)
@@ -93,6 +94,7 @@ void SendMessageToClient(int ID)
             char pwd[1024] = "";
             char name[1024] = "";
             char text[1024] = "";
+            deshifr(buffer,key);
             parce(buffer, name, pwd, text, res);
             if(res[0] != ':') {
                 printf("client id %d: ", ID);

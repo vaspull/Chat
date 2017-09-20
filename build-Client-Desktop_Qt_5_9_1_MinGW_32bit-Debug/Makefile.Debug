@@ -96,7 +96,7 @@ compiler_clean:
 
 ####### Compile
 
-debug/main.o: ../Client/main.cpp 
+debug/main.o: ../Client/main.cpp ../Client/crypto.cpp
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o debug\main.o ..\Client\main.cpp
 
 ####### Install
