@@ -41,6 +41,7 @@ void ReadMessageFromServer()
 
         if (recv(Connect, buffer, 1024, 0))
         {
+            deshifr(buffer,key);
             printf("%s",buffer);
         }
         for (int i = 0; buffer[i] != 0; i++) buffer[i] = '\0';

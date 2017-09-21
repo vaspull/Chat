@@ -106,6 +106,7 @@ void SendMessageToClient(int ID)
                 for (int i = 0; i <= ClientCount; i++) //Отправка каждому подключенному клиенту
                 {
                     if (i!=ID){
+                        shifr(res,key);
                         send(Connections[i], res, 1024, 0);
                     }
                     else {
