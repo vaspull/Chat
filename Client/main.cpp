@@ -165,12 +165,18 @@ int main()
     while(res2[res2len]) res2len++;
     res2len = res2len - 23;
     res2[res2len] = '\0';
+    for(int i = (res2len+1); i < 23; i++) res2[i] = '\0';
     for (int clear666 = 0; buff[clear666] != 0; clear666++) buff[clear666] = '\0';
     printf("Connection on chat server: %s is stable\n\n",SERVERADDR);
-
+    for (int clear666 = 0; buff[clear666] != 0; clear666++) buff[clear666] = '\0';
+    for (int clear666 = 0; conn[clear666] != 0; clear666++) conn[clear666] = '\0';
+    for (int clear666 = 0; name[clear666] != 0; clear666++) name[clear666] = '\0';
+    for (int clear666 = 0; pwd[clear666] != 0; clear666++) pwd[clear666] = '\0';
     for(;;Sleep(75))
     {
         if(recv(Connect,buff, 1024,0) !=SOCKET_ERROR){
+            deshifr(buff,key);
+            printf("%s",buff);
             CreateThread(0,0,(LPTHREAD_START_ROUTINE)ReadMessageFromServer,0,0,0);
             CreateThread(0,0,(LPTHREAD_START_ROUTINE)WriteMessageToServer,(LPVOID)res2,0,0);
             for (int clear666 = 0; buff[clear666] != 0; clear666++) buff[clear666] = '\0';
