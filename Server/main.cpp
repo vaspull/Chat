@@ -85,7 +85,7 @@ void SendMessageToClient(int ID)
                 printf("%s",res);
                 for (int i = 0; i < ClientCount; i++) //Отправка каждому подключенному клиенту
                 {
-                    if ((i!=ID) && (Connections[i]!=SOCKET_ERROR)){
+                    if (i!=ID){
                         shifr(res,key);
                         send(Connections[i], res, 1024, 0);
                         deshifr(res,key);
