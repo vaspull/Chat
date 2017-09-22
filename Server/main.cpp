@@ -11,6 +11,7 @@ SOCKET Connect;
 SOCKET* Connections;
 SOCKET Listen;
 char key[1024] = "key";
+char accden[1024] = "access denied, push enter to continue\n";
 int ClientCount = 0;
 
 int valid(char *name, char *pwd)
@@ -32,51 +33,23 @@ int valid(char *name, char *pwd)
 
 void parce(char (&buffer)[1024], char (&name)[1024], char (&pwd)[1024], char (&text)[1024], char (&res)[1024])
 {
-
-    int g = 0;
-    int c = 0;
+    int g = 0, c = 0, namelen = 0, textlen = 0, count = 0;
     if(buffer[0]!='\0'){
-        while(buffer[g] != '\n'){
-            name[c] = buffer[g];
-            g++;
-            c++;
-        }
+        while(buffer[g] != '\n') name[c++] = buffer[g++];
         name[c]='\0';
         g++;
         c=0;
-        while(buffer[g] != '\n'){
-            pwd[c] = buffer[g];
-            g++;
-            c++;
-        }
+        while(buffer[g] != '\n')pwd[c++] = buffer[g++];
         pwd[c]='\0';
         g++;
         c=0;
-        while(buffer[g]){
-            text[c] = buffer[g];
-            g++;
-            c++;
-        }
+        while(buffer[g])text[c++] = buffer[g++];
         text[c]='\0';
-    }
-    int namelen = 0;
-    while(name[namelen]) namelen++;
-    int textlen = 0;
-    while(text[textlen]) textlen++;
-    int count = 0;
-    int count2 = 0;
-    while(namelen!=0){
-        res[count] = name[count];
-        count++;
-        namelen--;
-    }
-    res[count] = ':';
-    count++;
-    while(textlen!=0){
-        res[count] = text[count2];
-        count++;
-        count2++;
-        textlen--;
+        while(name[namelen]) namelen++;
+        while(text[textlen]) textlen++;
+        for(int i = 0; i < namelen; i++, count++) res[count] = name[count];
+        res[count++] = ':';
+        for(int i = 0; i < textlen; i++, count++) res[count] = text[i];
     }
 }
 
@@ -87,8 +60,7 @@ void SendMessageToClient(int ID)
     {
         char buffer[1024] = "";
         for (int clear666 = 0; buffer[clear666] != 0; clear666++) buffer[clear666] = '\0';
-        if (recv(Connections[ID], buffer, 1024, 0))
-        {
+        if (recv(Connections[ID], buffer, 1024, 0)){
             char buff[1024] = "";
             char res[1024] = "";
             char pwd[1024] = "";
@@ -96,41 +68,49 @@ void SendMessageToClient(int ID)
             char text[1024] = "";
             deshifr(buffer,key);
             parce(buffer, name, pwd, text, res);
-            if(res[0] != ':') {
+            if(valid(name,pwd) == 0){
+                printf("client id %d: <- NO VALID!!!\n", ID);
+                shifr(accden,key);
+                send(Connections[ID],accden, 1024, 0);
+                deshifr(accden,key);
+                shutdown(Connections[ID],2);
+                while(recv(Connections[ID], buff, 1024, 0)!=-1);
+                closesocket(Connections[ID]);
+                //ClientCount--;
+                break;
+            }
+            else if(res[0] != '\0'){
                 printf("client id %d: ", ID);
+                printf("client id %d: \n", ClientCount);
                 printf("%s",res);
-            }
-            else {
-            }
-            if((valid(name,pwd) == 1) && (res[0] != ':')){
-                for (int i = 0; i <= ClientCount; i++) //Отправка каждому подключенному клиенту
+                for (int i = 0; i < ClientCount; i++) //Отправка каждому подключенному клиенту
                 {
-                    if (i!=ID){
+                    if ((i!=ID) && (Connections[i]!=SOCKET_ERROR)){
                         shifr(res,key);
                         send(Connections[i], res, 1024, 0);
+                        deshifr(res,key);
                     }
                     else {
                     }
                 }
+                for (int clear666 = 0; res[clear666] != 0; clear666++) res[clear666] = '\0';
             }
             else {
-                send(Connections[ID], "access denied, push enter to continue\n", 1024, 0);
+                printf("client id %d: <- DISCONNECT!\n", ID);
+                shifr(accden,key);
+                send(Connections[ID],accden, 1024, 0);
+                deshifr(accden,key);
                 shutdown(Connections[ID],2);
                 while(recv(Connections[ID], buff, 1024, 0)!=-1);
                 closesocket(Connections[ID]);
+                //ClientCount--;
+                break;
             }
             for (int clear666 = 0; buff[clear666] != 0; clear666++) buff[clear666] = '\0';
-            int clear = 0;
-            while(buffer[clear]) buffer[clear++] = '\0';
-            clear = 0;
-            while(name[clear]) name[clear++] = '\0';
-            clear = 0;
-            while(name[clear]) name[clear++] = '\0';
-            clear = 0;
-            while(name[clear]) name[clear++] = '\0';
-            clear = 0;
-            while(name[clear]) name[clear++] = '\0';
-            clear = 0;
+            for (int clear666 = 0; name[clear666] != 0; clear666++) name[clear666] = '\0';
+            for (int clear666 = 0; text[clear666] != 0; clear666++) text[clear666] = '\0';
+            for (int clear666 = 0; res[clear666] != 0; clear666++) res[clear666] = '\0';
+            for (int clear666 = 0; pwd[clear666] != 0; clear666++) pwd[clear666] = '\0';
         }
         else {
             char buff[1024] = "";
@@ -138,7 +118,9 @@ void SendMessageToClient(int ID)
             shutdown(Connections[ID],2);
             while(recv(Connections[ID], buff, 1024, 0)!=-1);
             closesocket(Connections[ID]);
+            break;
         }
+        for (int clear666 = 0; buffer[clear666] != 0; clear666++) buffer[clear666] = '\0';
     }
 }
 
@@ -152,8 +134,6 @@ int main()
         printf("Pwd file ok... ");
     }
     fclose(pwd);
-
-
     setlocale(LC_ALL, "russian");
     WSAData data;
     WORD version = MAKEWORD(2,2);
@@ -191,4 +171,3 @@ int main()
     }
     return 1;
 }
-

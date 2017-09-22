@@ -33,13 +33,11 @@ char* rus(char* st)
 
 void ReadMessageFromServer()
 {
-    char * buffer;
     for ( ; ; Sleep(75))
     {
-        buffer = new char[1024];
-        memset(buffer, 0, 1024);
-
-        if (recv(Connect, buffer, 1024, 0))
+        char buffer[1024] = "";
+        for (int i = 0; buffer[i] != 0; i++) buffer[i] = '\0';
+        if (recv(Connect, buffer, 1024, 0)!= SOCKET_ERROR)
         {
             deshifr(buffer,key);
             printf("%s",buffer);
@@ -51,7 +49,7 @@ void ReadMessageFromServer()
 void WriteMessageToServer(char *name)
 {
     char * buffer;
-    int namelen = 0;
+    int namelen = 0, reslen = 0, bufferlen = 0;
     while(name[namelen]) namelen++;
     int b = namelen;
     char res[1024] = "";
@@ -69,34 +67,18 @@ void WriteMessageToServer(char *name)
             exit(0);
             break;
         }
-        int bufferlen = 0;
         while(buffer[bufferlen]) bufferlen++;
         int count = 0;
-        int count2 = 0;
-        while(namelen!=0){
-            res[count] = name[count];
-            count++;
-            namelen--;
-        }
-        while(bufferlen!=0){
-            res[count] = buffer[count2];
-            count++;
-            count2++;
-            bufferlen--;
-        }
+        for(; count < namelen; count++)res[count] = name[count];
+        for(int i = 0; i < bufferlen; i++) res[count++] = buffer[i];
         shifr(res,key);
         send(Connect,res,1024,0);
-        int clear = 0;
-        while(res[clear]){
-            res[clear] = 0;
-            clear++;
-        }
-        int clear2 = 0;
-        while(buffer[clear2]){
-            res[clear2] = 0;
-            clear2++;
-        }
+        while(res[reslen]) reslen++;
+        for(int i = 0; i < reslen; i++) res[i] = '\0';
+        for(int i = 0; i < bufferlen; i++) buffer[i] = '\0';
         namelen = b;
+        reslen = b;
+        bufferlen = b;
     }
 }
 
@@ -185,6 +167,7 @@ int main()
     res2[res2len] = '\0';
     for (int clear666 = 0; buff[clear666] != 0; clear666++) buff[clear666] = '\0';
     printf("Connection on chat server: %s is stable\n\n",SERVERADDR);
+
     for(;;Sleep(75))
     {
         if(recv(Connect,buff, 1024,0) !=SOCKET_ERROR){
