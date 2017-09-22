@@ -159,7 +159,8 @@ int main()
     freeaddrinfo(result);
 
     printf("Start server...\n");
-    char m_connect[] = "asd";
+    char m_connect[] = "online\n\n";
+    shifr(m_connect,key);
     for(;;Sleep(75)) {
         if((Connect = accept(Listen,0,0)) != SOCKET_ERROR) {
             printf("Client id:%d connect...\n", ClientCount);

@@ -166,7 +166,6 @@ int main()
     res2len = res2len - 23;
     res2[res2len] = '\0';
     for(int i = (res2len+1); i < 23; i++) res2[i] = '\0';
-    for (int clear666 = 0; buff[clear666] != 0; clear666++) buff[clear666] = '\0';
     printf("Connection on chat server: %s is stable\n\n",SERVERADDR);
     for (int clear666 = 0; buff[clear666] != 0; clear666++) buff[clear666] = '\0';
     for (int clear666 = 0; conn[clear666] != 0; clear666++) conn[clear666] = '\0';
