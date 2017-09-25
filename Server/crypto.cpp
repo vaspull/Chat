@@ -4,7 +4,7 @@
 void shifr (char *res, char *key)
 {
     int reslen = 0, keylen = 0, keydigit = 0, trashlen = 0, itoglen = 0;
-    char trash[5000]="", itog[5000]="";
+    char trash[100000]="", itog[100000]="";
     while(res[reslen]) reslen++;
     for(int i = 0; i <= (reslen*2); i++){
         trash[i] = rand() % 127;
@@ -47,7 +47,7 @@ void shifr (char *res, char *key)
 void deshifr (char *res, char *key)
 {
     int reslen = 0, keylen = 0, keydigit = 0, itoglen = 0;
-    char itog[5000]="";
+    char itog[100000]="";
     while(res[reslen]) reslen++;
     keydigit = reslen % 4;
     while(key[keylen]) keylen++;

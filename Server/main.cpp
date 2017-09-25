@@ -31,7 +31,7 @@ int valid(char *name, char *pwd)
     return isHave;
 }
 
-void parce(char (&buffer)[1024], char (&name)[1024], char (&pwd)[1024], char (&text)[1024], char (&res)[1024])
+void parce(char (&buffer)[50000], char (&name)[1024], char (&pwd)[1024], char (&text)[50000], char (&res)[50000])
 {
     int g = 0, c = 0, namelen = 0, textlen = 0, count = 0;
     if(buffer[0]!='\0'){
@@ -58,23 +58,23 @@ void SendMessageToClient(int ID)
 {
     for ( ; ; Sleep(750))
     {
-        char buffer[1024] = "";
+        char buffer[50000] = "";
         for (int clear666 = 0; buffer[clear666] != 0; clear666++) buffer[clear666] = '\0';
-        if (recv(Connections[ID], buffer, 1024, 0)){
+        if (recv(Connections[ID], buffer, sizeof(buffer), 0)){
             char buff[1024] = "";
-            char res[1024] = "";
+            char res[50000] = "";
             char pwd[1024] = "";
             char name[1024] = "";
-            char text[1024] = "";
+            char text[50000] = "";
             deshifr(buffer,key);
             parce(buffer, name, pwd, text, res);
             if(valid(name,pwd) == 0){
                 printf("client id %d: <- NO VALID!!!\n", ID);
                 shifr(accden,key);
-                send(Connections[ID],accden, 1024, 0);
+                send(Connections[ID],accden, sizeof(accden), 0);
                 deshifr(accden,key);
                 shutdown(Connections[ID],2);
-                while(recv(Connections[ID], buff, 1024, 0)!=-1);
+                while(recv(Connections[ID], buff, sizeof(buff), 0)!=-1);
                 closesocket(Connections[ID]);
                 //ClientCount--;
                 break;
@@ -87,7 +87,7 @@ void SendMessageToClient(int ID)
                 {
                     if (i!=ID){
                         shifr(res,key);
-                        send(Connections[i], res, 1024, 0);
+                        send(Connections[i], res, sizeof(res), 0);
                         deshifr(res,key);
                     }
                     else {
@@ -98,10 +98,10 @@ void SendMessageToClient(int ID)
             else {
                 printf("client id %d: <- DISCONNECT!\n", ID);
                 shifr(accden,key);
-                send(Connections[ID],accden, 1024, 0);
+                send(Connections[ID],accden, sizeof(accden), 0);
                 deshifr(accden,key);
                 shutdown(Connections[ID],2);
-                while(recv(Connections[ID], buff, 1024, 0)!=-1);
+                while(recv(Connections[ID], buff, sizeof(buff), 0)!=-1);
                 closesocket(Connections[ID]);
                 //ClientCount--;
                 break;
@@ -116,7 +116,7 @@ void SendMessageToClient(int ID)
             char buff[1024] = "";
             for (int clear666 = 0; buff[clear666] != 0; clear666++) buff[clear666] = '\0';
             shutdown(Connections[ID],2);
-            while(recv(Connections[ID], buff, 1024, 0)!=-1);
+            while(recv(Connections[ID], buff, sizeof(buff), 0)!=-1);
             closesocket(Connections[ID]);
             break;
         }

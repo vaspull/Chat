@@ -35,9 +35,9 @@ void ReadMessageFromServer()
 {
     for ( ; ; Sleep(75))
     {
-        char buffer[1024] = "";
+        char buffer[50000] = "";
         for (int i = 0; buffer[i] != 0; i++) buffer[i] = '\0';
-        if (recv(Connect, buffer, 1024, 0)!= SOCKET_ERROR)
+        if (recv(Connect, buffer, sizeof(buffer), 0)!= SOCKET_ERROR)
         {
             deshifr(buffer,key);
             printf("%s",buffer);
@@ -48,16 +48,15 @@ void ReadMessageFromServer()
 
 void WriteMessageToServer(char *name)
 {
-    char * buffer;
     int namelen = 0, reslen = 0, bufferlen = 0;
     while(name[namelen]) namelen++;
     int b = namelen;
-    char res[1024] = "";
+    char res[50000] = "";
     for ( ; ; Sleep(75))
     {
-        buffer = new char[1024];
-        memset(buffer, 0, 1024);
-        fgets(buffer,1024, stdin);
+        char buffer[50000] = "";
+        for (int i = 0; buffer[i] != 0; i++) buffer[i] = '\0';
+        fgets(buffer,sizeof(buffer), stdin);
         rus(buffer);
         if (!strcmp(&buffer[0],"quit\n"))
         {
@@ -72,24 +71,25 @@ void WriteMessageToServer(char *name)
         for(; count < namelen; count++)res[count] = name[count];
         for(int i = 0; i < bufferlen; i++) res[count++] = buffer[i];
         shifr(res,key);
-        send(Connect,res,1024,0);
+        send(Connect,res,sizeof(res),0);
         while(res[reslen]) reslen++;
         for(int i = 0; i < reslen; i++) res[i] = '\0';
         for(int i = 0; i < bufferlen; i++) buffer[i] = '\0';
         namelen = b;
         reslen = b;
         bufferlen = b;
+        for (int i = 0; buffer[i] != 0; i++) buffer[i] = '\0';
     }
 }
 
 int main()
 {
     int i = 0, connlen = 0, res2len = 0, counter = 0, namelen = 0, pwdlen = 0, count = 0, count2 = 0;
-    char buff[1024] = "", res2[1024] = "", name[1024] = "", pwd[1024] = "";
+    char buff[50000] = "", res2[1024] = "", name[1024] = "", pwd[1024] = "";
     char conn[1024] = "<----CONNECTED TO CHAT\n";
     printf("Chat client ver. 0.1\n");
     printf("\n\nlogin:");
-    fgets(name,2000, stdin);
+    fgets(name,sizeof(name), stdin);
     printf("password:");
     for(i=0;(pwd[i] = getch()) != '\r';)   {
         if(pwd[i]=='\b' && i!=0) {
@@ -159,7 +159,7 @@ int main()
     }
     res2[res2len] = '\0';
     shifr(res2,key);
-    send(Connect,res2, 1024, 0);
+    send(Connect,res2, sizeof(res2), 0);
     deshifr(res2,key);
     res2len = 0;
     while(res2[res2len]) res2len++;
@@ -173,7 +173,7 @@ int main()
     for (int clear666 = 0; pwd[clear666] != 0; clear666++) pwd[clear666] = '\0';
     for(;;Sleep(75))
     {
-        if(recv(Connect,buff, 1024,0) !=SOCKET_ERROR){
+        if(recv(Connect,buff, sizeof(buff),0) !=SOCKET_ERROR){
             deshifr(buff,key);
             printf("%s",buff);
             CreateThread(0,0,(LPTHREAD_START_ROUTINE)ReadMessageFromServer,0,0,0);
