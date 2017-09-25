@@ -4,5 +4,9 @@ CONFIG -= app_bundle
 CONFIG -= qt
 
 SOURCES += main.cpp \
-    crypto.cpp
+    crypto.cpp \
+    sha512.cpp
 LIBS += -lws2_32
+
+HEADERS += \
+    sha512.h

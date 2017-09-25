@@ -172,3 +172,13 @@ int main()
     }
     return 1;
 }
+
+//sample using sha512
+//int main()
+//{
+//    string input = "grape";
+//    string input2 = "gubabo";
+//    string output1 = sha512(input);
+//    cout << "sha512('"<< input << "'):" << output1 << endl;
+//    return 0;
+//}
