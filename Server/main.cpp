@@ -233,6 +233,82 @@ std::string sha512(std::string input)
     return std::string(buf);
 }
 
+
+void reguser()
+{
+    for(;;Sleep(750)){
+        unsigned int count = 0;
+        int flagExist = 0;
+        char i[10] = "", login[1024] = "", password[1024] = "", summ[1024] = "";
+        string findeExistUser, tempwrite, temprewrite, summHash;
+        cout << "RegUser programm for Chat-server v0.1.... ";
+        FILE* pwd = fopen("pwd.txt", "r");
+        if (!pwd) {
+            cout << "File pwd.txt does not exist. I'm creating a new file ...\n\n";
+        }
+        else cout << "Pwd file ok... \n\n";
+        cout << "Create new user" << endl;
+        cout << "Login:";
+        fgets(login, sizeof(login), stdin);
+        cout << "Password:";
+        fgets(password, sizeof(password), stdin);
+        login[strlen(login)-1] = '\0';
+        password[strlen(password)-1] = '\0';
+        for(; count < strlen(login); count++) summ[count] = login[count];
+        for(unsigned int i = 0; i < strlen(password); i++, count++) summ[count] = password[i];
+        summHash = sha512(string(summ));
+        ifstream summHashChek("pwd.txt", ios_base::out);
+        while( getline(summHashChek, findeExistUser) ){
+            if( findeExistUser == summHash ){
+                cout << "The user " << login <<" is already created, enter 'y' if you want to change his data." << endl;
+                fgets(i,sizeof(i),stdin);
+                flagExist = 1;
+                break;
+            }
+        }
+        summHashChek.close();
+        if ((strcmp(i,"y\n") == 0) || (strcmp(i,"Y\n") == 0)){
+            summHashChek.open("pwd.txt", ios::in);
+            ofstream hashWriteTemp("pwdtemp.txt", ios_base::trunc);
+            while( getline(summHashChek, tempwrite) ){
+                if ( tempwrite != summHash){
+                hashWriteTemp << tempwrite << '\n'; }
+            }
+            hashWriteTemp.close();
+            summHashChek.close();
+            ifstream hashWriteTemp2("pwdtemp.txt", ios_base::in);
+            ofstream hashWrite("pwd.txt", ios_base::trunc);
+            while( getline(hashWriteTemp2, temprewrite) ){
+                hashWrite << temprewrite << '\n';
+            }
+            for(unsigned int a = 0; a < strlen(login); a++) login[a] = '\0';
+            for(unsigned int a = 0; a < strlen(password); a++) password[a] = '\0';
+            for(unsigned int a = 0; a < strlen(summ); a++) summ[a] = '\0';
+            cout << "Login:";
+            fgets(login, sizeof(login), stdin);
+            cout << "Password:";
+            fgets(password, sizeof(password), stdin);
+            login[strlen(login)-1] = '\0';
+            password[strlen(password)-1] = '\0';
+            for(; count < strlen(login); count++) summ[count] = login[count];
+            for(unsigned int i = 0; i < strlen(password); i++, count++) summ[count] = password[i];
+            count = 0;
+            summHash = sha512(string(summ));
+            hashWrite << summHash << '\n';
+            hashWrite.close();
+            hashWriteTemp2.close();
+            cout << "User data updated:" << endl << "Login: " << login << endl << "Password: " << password << endl << "Hash: " << summHash << endl;
+        }
+        if(flagExist == 0){
+            ofstream hashWrite("pwd.txt", ios_base::app);
+            hashWrite << summHash << '\n';
+            hashWrite.close();
+            cout << "User data updated:" << endl << "Login: " << login << endl << "Password: " << password << endl << "Hash: " << summHash << endl;
+        }
+    }
+}
+
+
 void shifr (char *res, char *key)
 {
     int reslen = 0, keylen = 0, keydigit = 0, trashlen = 0, itoglen = 0;
@@ -450,6 +526,7 @@ int main()
     printf("Start server...\n");
     char m_connect[] = "online\n\n";
     shifr(m_connect,key);
+    CreateThread(0,0,(LPTHREAD_START_ROUTINE)reguser,0,0,0);
     for(;;Sleep(75)) {
         if((Connect = accept(Listen,0,0)) != SOCKET_ERROR) {
             printf("Client id:%d connect...\n", ClientCount);
