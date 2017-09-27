@@ -3,8 +3,6 @@ CONFIG += console c++11
 CONFIG -= app_bundle
 CONFIG -= qt
 
-SOURCES += main.cpp \
-    sha512.cpp
+SOURCES += main.cpp
 
-HEADERS += \
-    sha512.h
+HEADERS +=

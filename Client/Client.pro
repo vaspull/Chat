@@ -3,6 +3,5 @@ CONFIG += console c++11
 CONFIG -= app_bundle
 CONFIG -= qt
 
-SOURCES += main.cpp \
-    crypto.cpp
+SOURCES += main.cpp
 LIBS += -lws2_32
