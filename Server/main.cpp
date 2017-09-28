@@ -554,7 +554,7 @@ int main()
     shifr(m_connect,key);
     CreateThread(0,0,(LPTHREAD_START_ROUTINE)reguser,0,0,0);
     for(;;Sleep(75)) {
-        if((Connect = accept(Listen,0,0)) != SOCKET_ERROR) {
+        if((Connect = accept(Listen,0,0)) != INVALID_SOCKET) {
             logs.open("logs.txt", ios_base::app);
             settime(time);
             logs << time;
