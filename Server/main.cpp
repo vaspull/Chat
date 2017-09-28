@@ -4,6 +4,7 @@
 #include <fstream>
 #include <string.h>
 #include <ctype.h>
+#include <time.h>
 
 using namespace std;
 
@@ -233,6 +234,14 @@ std::string sha512(std::string input)
     return std::string(buf);
 }
 
+void settime(char *t)
+{
+  struct tm *u;
+  const time_t timer = time(NULL);
+  u = localtime(&timer);
+  for (int i = 0; i<40; i++) t[i] = 0;
+  strftime(t, 40, "%d.%m.%Y %H:%M:%S", u);
+}
 
 void reguser()
 {
@@ -421,6 +430,7 @@ void parce(char (&buffer)[50000], char (&name)[1024], char (&pwd)[1024], char (&
 
 void SendMessageToClient(int ID)
 {
+    char time[40] = "";
     for ( ; ; Sleep(750))
     {
         ofstream logs("logs.txt", ios_base::app);
@@ -437,7 +447,9 @@ void SendMessageToClient(int ID)
             parce(buffer, name, pwd, text, res);
             if(valid(name,pwd) == 0){
                 logs.open("logs.txt", ios_base::app);
-                logs << "client id: " << ID << "<- NO VALID!!!\n";
+                settime(time);
+                logs << time;
+                logs << ": client id: " << ID << "<- NO VALID!!!\n";
                 logs.close();
                 //printf("client id %d: <- NO VALID!!!\n", ID);
                 shifr(accden,key);
@@ -451,11 +463,10 @@ void SendMessageToClient(int ID)
             }
             else if(res[0] != '\0'){
                 logs.open("logs.txt", ios_base::app);
-                logs << "client id: " << ID << ":" << res;
+                settime(time);
+                logs << time;
+                logs << ": client id: " << ID << ":" << res;
                 logs.close();
-//                printf("client id %d: ", ID);
-//                printf("client id %d: \n", ClientCount);
-//                printf("%s",res);
                 for (int i = 0; i < ClientCount; i++) //Отправка каждому подключенному клиенту
                 {
                     if (i!=ID){
@@ -470,9 +481,10 @@ void SendMessageToClient(int ID)
             }
             else {
                 logs.open("logs.txt", ios_base::app);
-                logs << "client id: " << ID << " <- DISCONNECT!\n";
+                settime(time);
+                logs << time;
+                logs << ": client id: " << ID << " <- DISCONNECT!\n";
                 logs.close();
-                //printf("client id %d: <- DISCONNECT!\n", ID);
                 shifr(accden,key);
                 send(Connections[ID],accden, sizeof(accden), 0);
                 deshifr(accden,key);
@@ -502,6 +514,7 @@ void SendMessageToClient(int ID)
 
 int main()
 {
+    char time[40] = "";
     ofstream logs("logs.txt", ios_base::app);
     logs.close();
     FILE* pwd = fopen("pwd.txt", "r");
@@ -533,15 +546,21 @@ int main()
     listen(Listen,SOMAXCONN);
     freeaddrinfo(result);
     printf("Start server...\n");
+    logs.open("logs.txt", ios_base::app);
+    settime(time);
+    logs << time;
+    logs << ": Start server...\n";
+    logs.close();
     char m_connect[] = "online\n\n";
     shifr(m_connect,key);
     CreateThread(0,0,(LPTHREAD_START_ROUTINE)reguser,0,0,0);
     for(;;Sleep(75)) {
         if((Connect = accept(Listen,0,0)) != SOCKET_ERROR) {
             logs.open("logs.txt", ios_base::app);
-            logs << "Client id: " << ClientCount << "connect...\n";
+            settime(time);
+            logs << time;
+            logs << ": Client id: " << ClientCount << "connect...\n";
             logs.close();
-//          printf("Client id:%d connect...\n", ClientCount);
             Connections[ClientCount] = Connect;
             send(Connections[ClientCount],m_connect,strlen(m_connect),0);
             ClientCount++;
