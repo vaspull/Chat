@@ -390,14 +390,16 @@ void deshifr (char *res, char *key)
 
 int valid(char *name, char *pwd)
 {
+    string summHash;
     string strName = string(name);
     string strPwd = string(pwd);
     std::string needString =  strName + strPwd;
     std::string string;
     bool isHave = 0;
+    summHash = sha512(needString);
     std::ifstream ifstream1("pwd.txt");
     while( std::getline( ifstream1, string ) )
-        if( string == needString ){
+        if( string == summHash ){
             isHave = 1;
             break;
         }
@@ -449,16 +451,14 @@ void SendMessageToClient(int ID)
                 logs.open("logs.txt", ios_base::app);
                 settime(time);
                 logs << time;
-                logs << ": client id: " << ID << "<- NO VALID!!!\n";
+                logs << ": client id: " << ID << " <-- NO VALID!!!\n";
                 logs.close();
-                //printf("client id %d: <- NO VALID!!!\n", ID);
                 shifr(accden,key);
                 send(Connections[ID],accden, sizeof(accden), 0);
                 deshifr(accden,key);
                 shutdown(Connections[ID],2);
                 while(recv(Connections[ID], buff, sizeof(buff), 0)!=-1);
                 closesocket(Connections[ID]);
-                //ClientCount--;
                 break;
             }
             else if(res[0] != '\0'){
@@ -491,7 +491,6 @@ void SendMessageToClient(int ID)
                 shutdown(Connections[ID],2);
                 while(recv(Connections[ID], buff, sizeof(buff), 0)!=-1);
                 closesocket(Connections[ID]);
-                //ClientCount--;
                 break;
             }
             for (int clear666 = 0; buff[clear666] != 0; clear666++) buff[clear666] = '\0';
@@ -559,7 +558,7 @@ int main()
             logs.open("logs.txt", ios_base::app);
             settime(time);
             logs << time;
-            logs << ": Client id: " << ClientCount << "connect...\n";
+            logs << ": Client id: " << ClientCount << " connect...\n";
             logs.close();
             Connections[ClientCount] = Connect;
             send(Connections[ClientCount],m_connect,strlen(m_connect),0);
