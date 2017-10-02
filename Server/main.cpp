@@ -1,18 +1,14 @@
 #include <ws2tcpip.h>
 #include <iostream>
-#include <winsock2.h>
 #include <fstream>
 #include <string.h>
 #include <ctype.h>
 #include <time.h>
 
-using namespace std;
 
-SOCKET Connect;
 SOCKET* Connections;
-SOCKET Listen;
+
 char key[1024] = "key";
-char accden[1024] = "access denied, push enter to continue\n";
 int ClientCount = 0;
 
 class SHA512
@@ -236,11 +232,11 @@ std::string sha512(std::string input)
 
 void settime(char *t)
 {
-  struct tm *u;
-  const time_t timer = time(NULL);
-  u = localtime(&timer);
-  for (int i = 0; i<40; i++) t[i] = 0;
-  strftime(t, 40, "%d.%m.%Y %H:%M:%S", u);
+    struct tm *u;
+    const time_t timer = time(NULL);
+    u = localtime(&timer);
+    for (int i = 0; i<40; i++) t[i] = 0;
+    strftime(t, 40, "%d.%m.%Y %H:%M:%S", u);
 }
 
 void reguser()
@@ -248,28 +244,29 @@ void reguser()
     for(;;Sleep(750)){
         unsigned int count = 0;
         int flagExist = 0;
-        char i[10] = "", login[1024] = "", password[1024] = "", summ[1024] = "";
-        string findeExistUser, tempwrite, temprewrite, summHash;
-        cout << "RegUser programm for Chat-server v0.1.... ";
+        char i[10], login[1024], password[1024], summ[1024];
+        std::string findeExistUser, tempwrite, temprewrite, summHash;
+        std::cout << "RegUser programm for Chat-server v0.1.... ";
         FILE* pwd = fopen("pwd.txt", "r");
         if (!pwd) {
-            cout << "File pwd.txt does not exist. I'm creating a new file ...\n\n";
+            std::cout << "File pwd.txt does not exist. I'm creating a new file ...\n\n";
         }
-        else cout << "Pwd file ok... \n\n";
-        cout << "Create new user" << endl;
-        cout << "Login:";
+        else std::cout << "Pwd file ok... \n\n";
+        fclose(pwd);
+        std::cout << "Create new user" << std::endl;
+        std::cout << "Login:";
         fgets(login, sizeof(login), stdin);
-        cout << "Password:";
+        std::cout << "Password:";
         fgets(password, sizeof(password), stdin);
         login[strlen(login)-1] = '\0';
         password[strlen(password)-1] = '\0';
         for(; count < strlen(login); count++) summ[count] = login[count];
         for(unsigned int i = 0; i < strlen(password); i++, count++) summ[count] = password[i];
-        summHash = sha512(string(summ));
-        ifstream summHashChek("pwd.txt", ios_base::out);
+        summHash = sha512(std::string(summ));
+        std::ifstream summHashChek("pwd.txt", std::ios_base::out);
         while( getline(summHashChek, findeExistUser) ){
             if( findeExistUser == summHash ){
-                cout << "The user " << login <<" is already created, enter 'y' if you want to change his data." << endl;
+                std::cout << "The user " << login <<" is already created, enter 'y' if you want to change his data." << std::endl;
                 fgets(i,sizeof(i),stdin);
                 flagExist = 1;
                 break;
@@ -277,42 +274,42 @@ void reguser()
         }
         summHashChek.close();
         if ((strcmp(i,"y\n") == 0) || (strcmp(i,"Y\n") == 0)){
-            summHashChek.open("pwd.txt", ios::in);
-            ofstream hashWriteTemp("pwdtemp.txt", ios_base::trunc);
+            summHashChek.open("pwd.txt", std::ios::in);
+            std::ofstream hashWriteTemp("pwdtemp.txt", std::ios_base::trunc);
             while( getline(summHashChek, tempwrite) ){
                 if ( tempwrite != summHash){
                     hashWriteTemp << tempwrite << '\n'; }
             }
             hashWriteTemp.close();
             summHashChek.close();
-            ifstream hashWriteTemp2("pwdtemp.txt", ios_base::in);
-            ofstream hashWrite("pwd.txt", ios_base::trunc);
+            std::ifstream hashWriteTemp2("pwdtemp.txt", std::ios_base::in);
+            std::ofstream hashWrite("pwd.txt", std::ios_base::trunc);
             while( getline(hashWriteTemp2, temprewrite) ){
                 hashWrite << temprewrite << '\n';
             }
             for(unsigned int a = 0; a < strlen(login); a++) login[a] = '\0';
             for(unsigned int a = 0; a < strlen(password); a++) password[a] = '\0';
             for(unsigned int a = 0; a < strlen(summ); a++) summ[a] = '\0';
-            cout << "Login:";
+            std::cout << "Login:";
             fgets(login, sizeof(login), stdin);
-            cout << "Password:";
+            std::cout << "Password:";
             fgets(password, sizeof(password), stdin);
             login[strlen(login)-1] = '\0';
             password[strlen(password)-1] = '\0';
             for(; count < strlen(login); count++) summ[count] = login[count];
             for(unsigned int i = 0; i < strlen(password); i++, count++) summ[count] = password[i];
             count = 0;
-            summHash = sha512(string(summ));
+            summHash = sha512(std::string(summ));
             hashWrite << summHash << '\n';
             hashWrite.close();
             hashWriteTemp2.close();
-            cout << "User data updated:" << endl << "Login: " << login << endl << "Password: " << password << endl << "Hash: " << summHash << endl;
+            std::cout << "User data updated:" << std::endl << "Login: " << login << std::endl << "Password: " << password << std::endl << "Hash: " << summHash << std::endl;
         }
         if(flagExist == 0){
-            ofstream hashWrite("pwd.txt", ios_base::app);
+            std::ofstream hashWrite("pwd.txt", std::ios_base::app);
             hashWrite << summHash << '\n';
             hashWrite.close();
-            cout << "User data updated:" << endl << "Login: " << login << endl << "Password: " << password << endl << "Hash: " << summHash << endl;
+            std::cout << "User data updated:" << std::endl << "Login: " << login << std::endl << "Password: " << password << std::endl << "Hash: " << summHash << std::endl;
         }
     }
 }
@@ -390,9 +387,9 @@ void deshifr (char *res, char *key)
 
 int valid(char *name, char *pwd)
 {
-    string summHash;
-    string strName = string(name);
-    string strPwd = string(pwd);
+    std::string summHash;
+    std::string strName = std::string(name);
+    std::string strPwd = std::string(pwd);
     std::string needString =  strName + strPwd;
     std::string string;
     bool isHave = 0;
@@ -432,10 +429,11 @@ void parce(char (&buffer)[50000], char (&name)[1024], char (&pwd)[1024], char (&
 
 void SendMessageToClient(int ID)
 {
+    char accden[1024] = "access denied, push enter to continue\n";
     char time[40] = "";
     for ( ; ; Sleep(750))
     {
-        ofstream logs("logs.txt", ios_base::app);
+        std::ofstream logs("logs.txt", std::ios_base::app);
         logs.close();
         char buffer[50000] = "";
         for (int clear666 = 0; buffer[clear666] != 0; clear666++) buffer[clear666] = '\0';
@@ -447,8 +445,8 @@ void SendMessageToClient(int ID)
             char text[50000] = "";
             deshifr(buffer,key);
             parce(buffer, name, pwd, text, res);
-            if(valid(name,pwd) == 0){
-                logs.open("logs.txt", ios_base::app);
+            if((valid(name,pwd) == 0) && connect(Connections[ID],0,0) != SOCKET_ERROR){
+                logs.open("logs.txt", std::ios_base::app);
                 settime(time);
                 logs << time;
                 logs << ": client id: " << ID << " <-- NO VALID!!!\n";
@@ -462,7 +460,7 @@ void SendMessageToClient(int ID)
                 break;
             }
             else if(res[0] != '\0'){
-                logs.open("logs.txt", ios_base::app);
+                logs.open("logs.txt", std::ios_base::app);
                 settime(time);
                 logs << time;
                 logs << ": client id: " << ID << ":" << res;
@@ -480,7 +478,7 @@ void SendMessageToClient(int ID)
                 for (int clear666 = 0; res[clear666] != 0; clear666++) res[clear666] = '\0';
             }
             else {
-                logs.open("logs.txt", ios_base::app);
+                logs.open("logs.txt", std::ios_base::app);
                 settime(time);
                 logs << time;
                 logs << ": client id: " << ID << " <- DISCONNECT!\n";
@@ -489,7 +487,6 @@ void SendMessageToClient(int ID)
                 send(Connections[ID],accden, sizeof(accden), 0);
                 deshifr(accden,key);
                 shutdown(Connections[ID],2);
-                while(recv(Connections[ID], buff, sizeof(buff), 0)!=-1);
                 closesocket(Connections[ID]);
                 break;
             }
@@ -513,8 +510,12 @@ void SendMessageToClient(int ID)
 
 int main()
 {
+    char accden[1024] = "access denied, push enter to continue\n";
+    shifr(accden, key);
+    SOCKET Connect;
+    SOCKET Listen;
     char time[40] = "";
-    ofstream logs("logs.txt", ios_base::app);
+    std::ofstream logs("logs.txt", std::ios_base::app);
     logs.close();
     FILE* pwd = fopen("pwd.txt", "r");
     if (!pwd) {
@@ -545,7 +546,7 @@ int main()
     listen(Listen,SOMAXCONN);
     freeaddrinfo(result);
     printf("Start server...\n");
-    logs.open("logs.txt", ios_base::app);
+    logs.open("logs.txt", std::ios_base::app);
     settime(time);
     logs << time;
     logs << ": Start server...\n";
@@ -555,15 +556,41 @@ int main()
     CreateThread(0,0,(LPTHREAD_START_ROUTINE)reguser,0,0,0);
     for(;;Sleep(75)) {
         if((Connect = accept(Listen,0,0)) != INVALID_SOCKET) {
-            logs.open("logs.txt", ios_base::app);
+            logs.open("logs.txt", std::ios_base::app);
             settime(time);
             logs << time;
             logs << ": Client id: " << ClientCount << " connect...\n";
             logs.close();
             Connections[ClientCount] = Connect;
-            send(Connections[ClientCount],m_connect,strlen(m_connect),0);
-            ClientCount++;
-            CreateThread(0,0,(LPTHREAD_START_ROUTINE)SendMessageToClient,(LPVOID)(ClientCount-1),0,0);
+            char buffer[50000], res[50000], pwd[1024], name[1024], text[50000];
+            recv(Connections[ClientCount], buffer, sizeof(buffer), 0);
+            deshifr(buffer,key);
+            parce(buffer, name, pwd, text, res);
+            if(valid(name,pwd) == 0){
+                logs.open("logs.txt", std::ios_base::app);
+                settime(time);
+                logs << time;
+                logs << ": client id: " << ClientCount << " : authorization attempt with name: " << name <<" <-- NO VALID!!!\n";
+                logs.close();
+                send(Connections[ClientCount],accden, sizeof(accden), 0);
+                shutdown(Connections[ClientCount],2);
+                closesocket(Connections[ClientCount]);
+            }
+            else {
+                shifr(res,key);
+                for (int i = 0; i < ClientCount; i++)
+                {
+                    send(Connections[i], res, sizeof(res), 0);
+                }
+                send(Connections[ClientCount],m_connect,strlen(m_connect),0);
+                ClientCount++;
+                CreateThread(0,0,(LPTHREAD_START_ROUTINE)SendMessageToClient,(LPVOID)(ClientCount-1),0,0);
+            }
+            memset(buffer, 0, sizeof(buffer));
+            memset(res, 0, sizeof(res));
+            memset(pwd, 0, sizeof(pwd));
+            memset(name, 0, sizeof(name));
+            memset(text, 0, sizeof(text));
         }
     }
     return 1;
