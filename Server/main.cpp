@@ -387,13 +387,10 @@ void deshifr (char *res, char *key)
 
 int valid(char *name, char *pwd)
 {
-    std::string summHash;
-    std::string strName = std::string(name);
-    std::string strPwd = std::string(pwd);
-    std::string needString =  strName + strPwd;
+    std::string needString =  std::string(name) + std::string(pwd);
+    std::string summHash = sha512(needString);
     std::string string;
     bool isHave = 0;
-    summHash = sha512(needString);
     std::ifstream ifstream1("pwd.txt");
     while( std::getline( ifstream1, string ) )
         if( string == summHash ){
@@ -426,7 +423,6 @@ void parce(char (&buffer)[50000], char (&name)[1024], char (&pwd)[1024], char (&
     }
 }
 
-
 void SendMessageToClient(int ID)
 {
     char accden[1024] = "access denied, push enter to continue\n";
@@ -438,7 +434,6 @@ void SendMessageToClient(int ID)
         char buffer[50000] = "";
         for (int clear666 = 0; buffer[clear666] != 0; clear666++) buffer[clear666] = '\0';
         if (recv(Connections[ID], buffer, sizeof(buffer), 0)){
-            char buff[1024] = "";
             char res[50000] = "";
             char pwd[1024] = "";
             char name[1024] = "";
@@ -455,8 +450,12 @@ void SendMessageToClient(int ID)
                 send(Connections[ID],accden, sizeof(accden), 0);
                 deshifr(accden,key);
                 shutdown(Connections[ID],2);
-                while(recv(Connections[ID], buff, sizeof(buff), 0)!=-1);
                 closesocket(Connections[ID]);
+                memset(buffer, 0, sizeof(buffer));
+                memset(res, 0, sizeof(res));
+                memset(pwd, 0, sizeof(pwd));
+                memset(name, 0, sizeof(name));
+                memset(text, 0, sizeof(text));
                 break;
             }
             else if(res[0] != '\0'){
@@ -465,17 +464,13 @@ void SendMessageToClient(int ID)
                 logs << time;
                 logs << ": client id: " << ID << ":" << res;
                 logs.close();
-                for (int i = 0; i < ClientCount; i++) //Отправка каждому подключенному клиенту
+                shifr(res,key);
+                for (int i = 0; i < ClientCount; i++)
                 {
                     if (i!=ID){
-                        shifr(res,key);
                         send(Connections[i], res, sizeof(res), 0);
-                        deshifr(res,key);
-                    }
-                    else {
                     }
                 }
-                for (int clear666 = 0; res[clear666] != 0; clear666++) res[clear666] = '\0';
             }
             else {
                 logs.open("logs.txt", std::ios_base::app);
@@ -488,23 +483,25 @@ void SendMessageToClient(int ID)
                 deshifr(accden,key);
                 shutdown(Connections[ID],2);
                 closesocket(Connections[ID]);
+                memset(buffer, 0, sizeof(buffer));
+                memset(res, 0, sizeof(res));
+                memset(pwd, 0, sizeof(pwd));
+                memset(name, 0, sizeof(name));
+                memset(text, 0, sizeof(text));
                 break;
             }
-            for (int clear666 = 0; buff[clear666] != 0; clear666++) buff[clear666] = '\0';
-            for (int clear666 = 0; name[clear666] != 0; clear666++) name[clear666] = '\0';
-            for (int clear666 = 0; text[clear666] != 0; clear666++) text[clear666] = '\0';
-            for (int clear666 = 0; res[clear666] != 0; clear666++) res[clear666] = '\0';
-            for (int clear666 = 0; pwd[clear666] != 0; clear666++) pwd[clear666] = '\0';
+            memset(buffer, 0, sizeof(buffer));
+            memset(res, 0, sizeof(res));
+            memset(pwd, 0, sizeof(pwd));
+            memset(name, 0, sizeof(name));
+            memset(text, 0, sizeof(text));
         }
         else {
-            char buff[1024] = "";
-            for (int clear666 = 0; buff[clear666] != 0; clear666++) buff[clear666] = '\0';
             shutdown(Connections[ID],2);
-            while(recv(Connections[ID], buff, sizeof(buff), 0)!=-1);
             closesocket(Connections[ID]);
+            memset(buffer, 0, sizeof(buffer));
             break;
         }
-        for (int clear666 = 0; buffer[clear666] != 0; clear666++) buffer[clear666] = '\0';
     }
 }
 
@@ -578,10 +575,7 @@ int main()
             }
             else {
                 shifr(res,key);
-                for (int i = 0; i < ClientCount; i++)
-                {
-                    send(Connections[i], res, sizeof(res), 0);
-                }
+                for (int i = 0; i < ClientCount; i++) send(Connections[i], res, sizeof(res), 0);
                 send(Connections[ClientCount],m_connect,strlen(m_connect),0);
                 ClientCount++;
                 CreateThread(0,0,(LPTHREAD_START_ROUTINE)SendMessageToClient,(LPVOID)(ClientCount-1),0,0);
