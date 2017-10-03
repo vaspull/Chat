@@ -63,7 +63,7 @@ void reguser()
             {
                 hashcheckRead.close();
                 isExist = 0;
-                std::cout << "\nThe user " << "|" << login << "|" << " is already created, enter 'y' if you want to change his data." << std::endl;
+                std::cout << "\nThe user " << "|" << login << "|" << " is already created, enter 'y' if you want to change his data:";
                 std::getline(std::cin,isAgain);
             }
         }
@@ -101,7 +101,7 @@ void reguser()
             hashcheckWrite.close();
             for(;isTrueLoginLengh;)
             {
-                printf("\nLogin:");
+                printf("\nEnter new data\nLogin:");
                 std::getline(std::cin,login);
                 if (strlen(login.c_str()) > maxlenghlogin)
                 {
