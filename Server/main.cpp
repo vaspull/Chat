@@ -156,6 +156,95 @@ void reguser()
     }
 }
 
+void crypt (std::string &res, const std::string key)  //updated text encryption function, std :: string is used, arrays char [] are removed, superfluous break and encryption logic is improved
+{
+    int keydigit = 0, istruevalue = 1, isend = 1;
+    std::string trash, itog;
+    for(unsigned int i = 0; i <= strlen(res.c_str())*2; i++){   //creating a garbage line that merges with the message being sent
+        trash += rand() % 127;                                  //first there are 2 symbols of garbage, then 1 character of the transmitted message,
+        for(;istruevalue;)                                      //after the last character there are also 2 garbage characters
+        {
+            if(isalnum(trash[i]) == 0) {
+                trash[i] = rand()%127;
+            }
+            else
+            {
+                istruevalue = 0;
+            }
+        }
+        istruevalue = 1;
+        i++;
+        trash += rand() % 127;
+        for(;istruevalue;)
+        {
+            if(isalnum(trash[i]) == 0) {
+                trash[i] = rand()%127;
+            }
+            else
+            {
+                istruevalue = 0;
+            }
+        }
+        istruevalue = 1;
+    }
+
+    for(unsigned int a = 0, j = 0; a <= strlen(res.c_str()); ){ //an auxiliary line itog, it will write garbage alternating characters of the transmitted message
+        itog += trash[j++];
+        itog += trash[j++];
+        itog += res[a++];
+    }
+    res.clear();
+    res = itog;
+    keydigit = strlen(res.c_str()) % 4;  //keydigit has the value of the remainder of dividing the length of the string with junk and desired characters by 4
+    for (unsigned int i = 0; i < strlen(res.c_str());)                      //in this cycle and there is an encryption, to each character code of a line with garbage and necessary symbols
+    {                                                                       //adds the key symbol code and keydigit
+        for (unsigned int a = 0; (a < strlen(key.c_str())) && isend;a++)    //the first character of the key, the second second, and so on, is added to the first character of the string.
+        {                                                                   //If the string does not end, or the key does not end, and then the key reads
+            if(i<strlen(res.c_str()))
+            {
+                res[i] = res[i]+key[a]+keydigit;
+                i++;
+            }
+            else
+            {
+                isend = 0;
+            }
+        }
+        isend = 1;
+    }
+    itog.clear();
+    trash.clear();
+}
+
+void decrypt (std::string &res, const std::string key) //decryption is performed in the reverse order of encryption
+{
+    int keydigit = strlen(res.c_str()) % 4, isend = 1;;
+    std::string itog;
+    for (unsigned int i = 0; i < strlen(res.c_str());)
+    {
+        for (unsigned int a = 0; (a < strlen(key.c_str())) && isend;a++)
+        {
+            if( i < strlen(res.c_str()) )
+            {
+                res[i] = res[i]-key[a]-keydigit;
+                i++;
+            }
+            else
+            {
+                isend = 0;
+            }
+        }
+        isend = 1;
+    }
+    for(unsigned int i = 2; i < strlen(res.c_str());){
+        itog += res[i];
+        i += 3;
+    }
+    res.clear();
+    res = itog;
+    itog.clear();
+}
+
 void shifr (char *res, const char *key)
 {
     int reslen = 0, keylen = 0, keydigit = 0, trashlen = 0, itoglen = 0;
