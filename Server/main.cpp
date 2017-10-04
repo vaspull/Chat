@@ -6,24 +6,34 @@
 #include <time.h>
 #include <sha512.h>
 #define maxlenghlogin 10
-#define maxlenghpwd 10
+#define minlenghlogin 6
+#define maxlenghpwd 12
+#define minlenghpwd 6
+#define keysize 1024
 
-SOCKET* Connections;
-char key[1024] = "key";
-int ClientCount = 0;
+const char key[keysize] = "key";
+
+struct my_struct
+{
+    SOCKET* Connections;
+    int ClientCount = 0;
+    int ID;
+};
 
 void settime(char *t)
 {
     struct tm *u;
     const time_t timer = time(NULL);
     u = localtime(&timer);
-    for (int i = 0; i<40; i++) t[i] = 0;
+    for(unsigned int i = 0; i < strlen(t); i++) t[i] = 0;
     strftime(t, 40, "%d.%m.%Y %H:%M:%S", u);
 }
 
 void reguser()
 {
     printf("User registration program\n\n");
+    std::ifstream read;
+    std::ofstream write;
     for(;;Sleep(50))
     {
         int isTruePwdLengh = 1, isTrueLoginLengh = 1, isExist = 1;
@@ -35,6 +45,10 @@ void reguser()
             if (strlen(login.c_str()) > maxlenghlogin)
             {
                 printf("You have exceeded the maximum value for login. The maximum value %d, try again...\n", maxlenghlogin);
+            }
+            else if (strlen(login.c_str()) < minlenghlogin)
+            {
+                printf("You entered too short a login. The minimum value %d, try again...\n", minlenghlogin);
             }
             else
             {
@@ -49,6 +63,10 @@ void reguser()
             {
                 printf("You have exceeded the maximum value for password. The maximum value %d, try again...\n", maxlenghpwd);
             }
+            else if (strlen(pwd.c_str()) < minlenghpwd)
+            {
+                printf("You entered too short a password. The minimum value %d, try again...\n", minlenghpwd);
+            }
             else
             {
                 isTruePwdLengh = 0;
@@ -56,23 +74,23 @@ void reguser()
         }
         summ = login + pwd;
         hash = sha512(summ);
-        std::ifstream hashcheckRead ("pwd.txt", std::ifstream::in); //search in pwd.txt, there may already exist such a record
-        for(;getline(hashcheckRead,findeExistUser) && isExist != 0;)
+        read.open("pwd.txt", std::ifstream::in);//search in pwd.txt, there may already exist such a record
+        for(;getline(read,findeExistUser) && isExist != 0;)
         {
             if ( findeExistUser == hash )
             {
-                hashcheckRead.close();
+                read.close();
                 isExist = 0;
                 std::cout << "\nThe user " << "|" << login << "|" << " is already created, enter 'y' if you want to change his data:";
                 std::getline(std::cin,isAgain);
             }
         }
-        hashcheckRead.close();
+        read.close();
         if(isExist) //if the entry does not exist, then pwd.txt is opened and a new hash is written
         {
-            std::ofstream hashcheckWrite ("pwd.txt", std::ofstream::app);
-            hashcheckWrite << hash << "\n";
-            hashcheckWrite.close();
+            write.open("pwd.txt", std::ofstream::app);
+            write << hash << "\n";
+            write.close();
             std::cout << "\nUser data:\nLogin:" << "|" << login << "|" << "\nPassword:" << "|" << pwd << "|" << "\nHash:" << "|" << hash << "|" << std::endl;
         }
 
@@ -80,25 +98,25 @@ void reguser()
 
         if(isAgain == "y" || isAgain == "Y") // if the selection is selected to update the user data, then overwrite the pwd.txt file
         {
-            hashcheckRead.open("pwd.txt", std::ifstream::in); //открывается файл pwd.txt и файл temp.txt, чтобы скопировать из pwd в temp все данные, кроме тех, что надо изменить
-            std::ofstream hashcheckTEMPwrite ("temp.txt", std::ofstream::trunc);
-            for(;getline(hashcheckRead,copy);)
+            read.open("pwd.txt", std::ifstream::in);//Open the pwd.txt file and the temp.txt file to copy from pwd to temp all the data except those that need to be changed
+            write.open("temp.txt", std::ofstream::trunc);
+            for(;getline(read,copy);)
             {
                 if( hash != copy)
                 {
-                    hashcheckTEMPwrite << copy << "\n";
+                    write << copy << "\n";
                 }
             }
-            hashcheckRead.close();
-            hashcheckTEMPwrite.close();
-            std::ifstream hashcheckTEMPread ("temp.txt", std::ifstream::in); //the pwd and temp files are reopened to re-write back from temp to pwd
-            std::ofstream hashcheckWrite ("pwd.txt", std::ofstream::out);
-            for(;getline(hashcheckTEMPread,copy);)
+            read.close();
+            write.close();
+            read.open("temp.txt", std::ifstream::in); //the pwd and temp files are reopened to re-write back from temp to pwd
+            write.open("pwd.txt", std::ofstream::out);
+            for(;getline(read,copy);)
             {
-                hashcheckWrite << copy << "\n";
+                write << copy << "\n";
             }
-            hashcheckTEMPread.close();
-            hashcheckWrite.close();
+            read.close();
+            write.close();
             for(;isTrueLoginLengh;)
             {
                 printf("\nEnter new data\nLogin:");
@@ -127,18 +145,18 @@ void reguser()
             }
             summ = login + pwd;
             hash = sha512(summ);
-            hashcheckWrite.open("pwd.txt", std::ofstream::app); //write changed data to pwd.txt
-            hashcheckWrite << hash << "\n";
-            hashcheckWrite.close();
+            write.open("pwd.txt", std::ofstream::app); //write changed data to pwd.txt
+            write << hash << "\n";
+            write.close();
             isTruePwdLengh = 1, isTrueLoginLengh = 1, isExist = 1;
-            hashcheckTEMPwrite.open("temp.txt", std::ofstream::trunc); //cleaning temp.txt
-            hashcheckTEMPwrite.close();
+            write.open("temp.txt", std::ofstream::trunc); //cleaning temp.txt
+            write.close();
             std::cout << "\nUpdated user data:\nLogin:" << "|" << login << "|" << "\nPassword:" << "|" << pwd << "|" << "\nHash:" << "|" << hash << "|" << std::endl;
         }
     }
 }
 
-void shifr (char *res, char *key)
+void shifr (char *res, const char *key)
 {
     int reslen = 0, keylen = 0, keydigit = 0, trashlen = 0, itoglen = 0;
     char trash[100000]="", itog[100000]="";
@@ -181,7 +199,7 @@ void shifr (char *res, char *key)
     }
 }
 
-void deshifr (char *res, char *key)
+void deshifr (char *res, const char *key)
 {
     int reslen = 0, keylen = 0, keydigit = 0, itoglen = 0;
     char itog[100000]="";
@@ -249,8 +267,9 @@ char parce(char *buffer, char *name, char *pwd, char *text, char *res)
     return parce;
 }
 
-void SendMessageToClient(int ID)
+void SendMessageToClient(struct my_struct *condata)
 {
+    int ID = condata->ID;
     char accden[1024] = "access denied, push enter to continue\n";
     char time[40] = "";
     for ( ; ; Sleep(750))
@@ -259,24 +278,24 @@ void SendMessageToClient(int ID)
         logs.close();
         char buffer[50000] = "";
         for (int clear666 = 0; buffer[clear666] != 0; clear666++) buffer[clear666] = '\0';
-        if (recv(Connections[ID], buffer, sizeof(buffer), 0)){
+        if (recv(condata->Connections[ID], buffer, sizeof(buffer), 0)){
             char res[50000] = "";
             char pwd[1024] = "";
             char name[1024] = "";
             char text[50000] = "";
             deshifr(buffer,key);
             parce(buffer, name, pwd, text, res);
-            if((valid(name,pwd) == 0) && connect(Connections[ID],0,0) != SOCKET_ERROR){
+            if((valid(name,pwd) == 0) && connect(condata->Connections[ID],0,0) != SOCKET_ERROR){
                 logs.open("logs.txt", std::ios_base::app);
                 settime(time);
                 logs << time;
                 logs << ": client id: " << ID << " : authorization attempt with name: " << name <<" <-- NO VALID!!!\n";
                 logs.close();
                 shifr(accden,key);
-                send(Connections[ID],accden, sizeof(accden), 0);
+                send(condata->Connections[ID],accden, sizeof(accden), 0);
                 deshifr(accden,key);
-                shutdown(Connections[ID],2);
-                closesocket(Connections[ID]);
+                shutdown(condata->Connections[ID],2);
+                closesocket(condata->Connections[ID]);
                 memset(buffer, 0, sizeof(buffer));
                 memset(res, 0, sizeof(res));
                 memset(pwd, 0, sizeof(pwd));
@@ -291,10 +310,10 @@ void SendMessageToClient(int ID)
                 logs << ": client id: " << ID << ":" << res;
                 logs.close();
                 shifr(res,key);
-                for (int i = 0; i < ClientCount; i++)
+                for (int i = 0; i < condata->ClientCount; i++)
                 {
-                    if (i!=ID){
-                        send(Connections[i], res, sizeof(res), 0);
+                     if (i!=ID){
+                          send(condata->Connections[i], res, sizeof(res), 0);
                     }
                 }
             }
@@ -305,10 +324,10 @@ void SendMessageToClient(int ID)
                 logs << ": client id: " << ID << " <- DISCONNECT!\n";
                 logs.close();
                 shifr(accden,key);
-                send(Connections[ID],accden, sizeof(accden), 0);
+                send(condata->Connections[ID],accden, sizeof(accden), 0);
                 deshifr(accden,key);
-                shutdown(Connections[ID],2);
-                closesocket(Connections[ID]);
+                shutdown(condata->Connections[ID],2);
+                closesocket(condata->Connections[ID]);
                 memset(buffer, 0, sizeof(buffer));
                 memset(res, 0, sizeof(res));
                 memset(pwd, 0, sizeof(pwd));
@@ -323,8 +342,8 @@ void SendMessageToClient(int ID)
             memset(text, 0, sizeof(text));
         }
         else {
-            shutdown(Connections[ID],2);
-            closesocket(Connections[ID]);
+            shutdown(condata->Connections[ID],2);
+            closesocket(condata->Connections[ID]);
             memset(buffer, 0, sizeof(buffer));
             break;
         }
@@ -333,6 +352,7 @@ void SendMessageToClient(int ID)
 
 int main()
 {
+    struct my_struct condata;
     char accden[1024] = "access denied, push enter to continue\n";
     shifr(accden, key);
     SOCKET Connect;
@@ -357,7 +377,7 @@ int main()
     }
     struct addrinfo hints;
     struct addrinfo * result;
-    Connections = (SOCKET*)calloc(64,sizeof(SOCKET));
+    condata.Connections = (SOCKET*)calloc(64,sizeof(SOCKET));
     ZeroMemory(&hints,sizeof(hints));
     hints.ai_family = AF_INET;
     hints.ai_flags = AI_PASSIVE;
@@ -382,29 +402,30 @@ int main()
             logs.open("logs.txt", std::ios_base::app);
             settime(time);
             logs << time;
-            logs << ": Client id: " << ClientCount << " connect...\n";
+            logs << ": Client id: " << condata.ClientCount << " connect...\n";
             logs.close();
-            Connections[ClientCount] = Connect;
+            condata.Connections[condata.ClientCount] = Connect;
             char buffer[50000], res[50000], pwd[1024], name[1024], text[50000];
-            recv(Connections[ClientCount], buffer, sizeof(buffer), 0);
+            recv(condata.Connections[condata.ClientCount], buffer, sizeof(buffer), 0);
             deshifr(buffer,key);
             parce(buffer, name, pwd, text, res);
             if(valid(name,pwd) == 0){
                 logs.open("logs.txt", std::ios_base::app);
                 settime(time);
                 logs << time;
-                logs << ": client id: " << ClientCount << " : authorization attempt with name: " << name <<" <-- NO VALID!!!\n";
+                logs << ": client id: " << condata.ClientCount << " : authorization attempt with name: " << name <<" <-- NO VALID!!!\n";
                 logs.close();
-                send(Connections[ClientCount],accden, sizeof(accden), 0);
-                shutdown(Connections[ClientCount],2);
-                closesocket(Connections[ClientCount]);
+                send(condata.Connections[condata.ClientCount],accden, sizeof(accden), 0);
+                shutdown(condata.Connections[condata.ClientCount],2);
+                closesocket(condata.Connections[condata.ClientCount]);
             }
             else {
                 shifr(res,key);
-                for (int i = 0; i < ClientCount; i++) send(Connections[i], res, sizeof(res), 0);
-                send(Connections[ClientCount],m_connect,strlen(m_connect),0);
-                ClientCount++;
-                CreateThread(0,0,(LPTHREAD_START_ROUTINE)SendMessageToClient,(LPVOID)(ClientCount-1),0,0);
+                for (int i = 0; i < condata.ClientCount; i++) send(condata.Connections[i], res, sizeof(res), 0);
+                send(condata.Connections[condata.ClientCount],m_connect,strlen(m_connect),0);
+                condata.ID = condata.ClientCount;
+                (condata.ClientCount)++;
+                CreateThread(0,0,(LPTHREAD_START_ROUTINE)SendMessageToClient,(LPVOID)&condata,0,0);
             }
             memset(buffer, 0, sizeof(buffer));
             memset(res, 0, sizeof(res));
