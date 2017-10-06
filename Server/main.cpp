@@ -338,12 +338,12 @@ void SendMessageToClient(struct my_struct *condata)
             {
                 logs.open("logs.txt", std::ios_base::app);
                 settime(time);
-                logs << time;
-                logs << ": client id: " << ID << ":" << res;
+                logs << "[" << time << "] client id " << ID << ":" << res;
                 logs.close();
-                crypt(res,key);
-                char reschar[strlen(res.c_str())];
-                for(unsigned int i = 0; i < strlen(res.c_str());i++) reschar[i] = res[i];
+                std::string itog = "["+std::string(time)+"] "+ res;
+                crypt(itog,key);
+                char reschar[strlen(itog.c_str())];
+                for(unsigned int i = 0; i < strlen(itog.c_str());i++) reschar[i] = itog[i];
                 for (int i = 0; i < condata->ClientCount; i++)
                 {
                     if (i!=ID)
@@ -358,8 +358,7 @@ void SendMessageToClient(struct my_struct *condata)
             {
                 logs.open("logs.txt", std::ios_base::app);
                 settime(time);
-                logs << time;
-                logs << ": client id: " << ID << " : authorization attempt with name: "<< "|" << name << "|" << " and pwd:"<< "|" << pwd << "|" <<" <-- NO VALID!!!\n";
+                logs << "[" << time <<"] client id " << ID << " : authorization attempt with name: "<< "|" << name << "|" << " and pwd:"<< "|" << pwd << "|" <<" <-- NO VALID!!!\n";
                 logs.close();
                 send(condata->Connections[ID],accdenchar, sizeof(accdenchar), 0);
                 shutdown(condata->Connections[ID],2);
@@ -371,8 +370,7 @@ void SendMessageToClient(struct my_struct *condata)
             {
                 logs.open("logs.txt", std::ios_base::app);
                 settime(time);
-                logs << time;
-                logs << ": client id: " << ID << " <- DISCONNECT!\n";
+                logs << "[" << time << "] client id " << ID << " <- DISCONNECT!\n";
                 logs.close();
                 shutdown(condata->Connections[ID],2);
                 closesocket(condata->Connections[ID]);
@@ -457,8 +455,7 @@ int main()
             if(valid(name,pwd) == 0){
                 logs.open("logs.txt", std::ios_base::app);
                 settime(time);
-                logs << time;
-                logs << ": client id: " << condata.ClientCount << " : authorization attempt with name: "<< "|" << name << "|" << " and pwd:"<< "|" << pwd << "|" <<" <-- NO VALID!!!\n";
+                logs << "[" << time << "] client id " << condata.ClientCount << " : authorization attempt with name: "<< "|" << name << "|" << " and pwd:"<< "|" << pwd << "|" <<" <-- NO VALID!!!\n";
                 logs.close();
                 char accdenchar[strlen(accden.c_str())];
                 for(unsigned int i = 0; i < strlen(accden.c_str());i++) accdenchar[i] = accden[i];
@@ -469,8 +466,7 @@ int main()
             else {
                 logs.open("logs.txt", std::ios_base::app);
                 settime(time);
-                logs << time;
-                logs << ": client id: " << condata.ClientCount << " : authorization attempt with name: "<< "|" << name << "|" << " and pwd:"<< "|" << pwd << "|" <<" <---SUCCESS!!!\n";
+                logs << "[" << time << "] client id " << condata.ClientCount << " : authorization attempt with name: "<< "|" << name << "|" << " and pwd:"<< "|" << pwd << "|" <<" <---SUCCESS!!!\n";
                 logs.close();
                 crypt(res,key);
                 char reschar[strlen(res.c_str())];
