@@ -1,199 +1,227 @@
 #include <ws2tcpip.h>
 #include <iostream>
-#include <winsock2.h>
-#include <conio.h>
-#include <limits.h>
+#include <windows.h>
+#include <string>
+#include <fstream>
+#include <time.h>
 #include <ctype.h>
-
+#include <conio.h>
+#define maxlenghlogin 10
+#define minlenghlogin 6
+#define maxlenghpwd 12
+#define minlenghpwd 6
+#define sleeptime 300
+#define buffersize 50000
 #define PORT 7770
 #define SERVERADDR "127.0.0.1"
+#define pwdsize 1024
+#define deffconn "<----CONNECTED TO CHAT"
+const std::string key = "key";
 
-using namespace std;
-
-SOCKET Connect;
-char key[1024]="key";
-
-void shifr (char *res, char *key)
+void settime(char *t)
 {
-    int reslen = 0, keylen = 0, keydigit = 0, trashlen = 0, itoglen = 0;
-    char trash[100000]="", itog[100000]="";
-    while(res[reslen]) reslen++;
-    for(int i = 0; i <= (reslen*2); i++){
-        trash[i] = rand() % 127;
-        if(isalnum(trash[i]) == 0) {
-            trash[i] = 63;
+    struct tm *u;
+    const time_t timer = time(NULL);
+    u = localtime(&timer);
+    for(unsigned int i = 0; i < strlen(t); i++) t[i] = 0;
+    strftime(t, 40, "%d.%m.%Y %H:%M:%S", u);
+}
+
+struct my_struct
+{
+    SOCKET Connect;
+    std::string name;
+    std::string pwd;
+};
+
+void crypt (std::string &res, const std::string key)
+{
+    int keydigit = 0, istruevalue = 1, isend = 1;
+    std::string trash, itog;
+    for(unsigned int i = 0; i <= strlen(res.c_str())*2; i++){
+        trash += rand() % 127;
+        for(;istruevalue;)
+        {
+            if(isalnum(trash[i]) == 0) {
+                trash[i] = rand()%127;
+            }
+            else
+            {
+                istruevalue = 0;
+            }
         }
+        istruevalue = 1;
         i++;
-        trash[i] = rand() % 127;
-        if(isalnum(trash[i]) == 0) {
-            trash[i] = 63;
+        trash += rand() % 127;
+        for(;istruevalue;)
+        {
+            if(isalnum(trash[i]) == 0) {
+                trash[i] = rand()%127;
+            }
+            else
+            {
+                istruevalue = 0;
+            }
         }
+        istruevalue = 1;
     }
-    trashlen = 0;
-    while(trash[trashlen]) trashlen++;
-    for(int i = 0, a = 0, j = 0; a < reslen; ){
-        itog[i++] = trash[j++];
-        itog[i++] = trash[j++];
-        itog[i++] = res[a++];
+    for(unsigned int a = 0, j = 0; a <= strlen(res.c_str()); ){
+        itog += trash[j++];
+        itog += trash[j++];
+        itog += res[a++];
     }
-    while(itog[itoglen]) itoglen++;
-    for(int i = 0; i < reslen; i++) res[i] = 0;
-    for(int i = 0; i < itoglen; i++) res[i] = itog[i];
-    while(key[keylen]) keylen++;
-    reslen = 0;
-    while(res[reslen]) reslen++;
-    keydigit = reslen % 4;
-    for (int i = 0; i < reslen;){
-        for (int a = 0; a < keylen;a++){
-            if(i<reslen){
+    res.clear();
+    res = itog;
+    keydigit = strlen(res.c_str()) % 4;
+    for (unsigned int i = 0; i < strlen(res.c_str());)
+    {
+        for (unsigned int a = 0; (a < strlen(key.c_str())) && isend;a++)
+        {
+            if(i<strlen(res.c_str()))
+            {
                 res[i] = res[i]+key[a]+keydigit;
                 i++;
             }
-            else{
-                break;
+            else
+            {
+                isend = 0;
             }
         }
+        isend = 1;
     }
+    itog.clear();
+    trash.clear();
 }
 
-void deshifr (char *res, char *key)
+void decrypt (std::string &res, const std::string key)
 {
-    int reslen = 0, keylen = 0, keydigit = 0, itoglen = 0;
-    char itog[100000]="";
-    while(res[reslen]) reslen++;
-    keydigit = reslen % 4;
-    while(key[keylen]) keylen++;
-    for (int i = 0; i < reslen;){
-        for (int a = 0; a < keylen;a++){
-            if(i<reslen){
+    int keydigit = strlen(res.c_str()) % 4, isend = 1;;
+    std::string itog;
+    for (unsigned int i = 0; i < strlen(res.c_str());)
+    {
+        for (unsigned int a = 0; (a < strlen(key.c_str())) && isend;a++)
+        {
+            if( i < strlen(res.c_str()) )
+            {
                 res[i] = res[i]-key[a]-keydigit;
                 i++;
             }
-            else{
-                break;
+            else
+            {
+                isend = 0;
             }
         }
+        isend = 1;
     }
-    for(int i = 0, a = 2; i < reslen; i++){
-        itog[i] = res[a];
-        a += 3;
+    for(unsigned int i = 2; i < strlen(res.c_str());){
+        itog += res[i];
+        i += 3;
     }
-    while(itog[itoglen]) itoglen++;
-    for(int i = 0; i < reslen; i++) res[i] = 0;
-    for(int i = 0; i < itoglen; i++) res[i] = itog[i];
+    res.clear();
+    res = itog;
+    itog.clear();
 }
 
-char* rus(char* st)
+
+std::string rus(std::string &st)
 {
-    char* p = st;
-    while( *p ){
-        if(*p >= 192)
-            if(*p <= 239)
-                *p -= 64;
+    for(unsigned int i = 0; i < st.length(); i++)
+    {
+        int a = st[i];
+        if(a >= 192)
+        {
+            if(a<=239)
+            {
+                a -= 64;
+            }
             else
-                *p -= 16;
-        p++;
+            {
+                a -=16;
+            }
+        }
     }
     return st;
 }
 
-void ReadMessageFromServer()
+void ReadMessageFromServer(struct my_struct *condata)
 {
-    for ( ; ; Sleep(75))
+    for ( ; ; Sleep(sleeptime))
     {
-        char buffer[50000] = "";
-        for (int i = 0; buffer[i] != 0; i++) buffer[i] = '\0';
-        if (recv(Connect, buffer, sizeof(buffer), 0)!= SOCKET_ERROR)
+        char buffer[buffersize] = "";
+        if (recv(condata->Connect, buffer, sizeof(buffer), 0)!= SOCKET_ERROR)
         {
-            deshifr(buffer,key);
-            printf("%s",buffer);
+            std::string buff = std::string(buffer);
+            memset(buffer,0,sizeof(buffer));
+            decrypt(buff,key);
+            std::cout << buff;
         }
-        for (int i = 0; buffer[i] != 0; i++) buffer[i] = '\0';
     }
 }
 
-void WriteMessageToServer(char *name)
+void WriteMessageToServer(struct my_struct *condata)
 {
-    int namelen = 0, reslen = 0, bufferlen = 0;
-    while(name[namelen]) namelen++;
-    int b = namelen;
-    char res[50000] = "";
-    for ( ; ; Sleep(75))
+    for ( ; ; Sleep(sleeptime))
     {
-        char buffer[50000] = "";
-        for (int i = 0; buffer[i] != 0; i++) buffer[i] = '\0';
-        fgets(buffer,sizeof(buffer), stdin);
-        rus(buffer);
-        if (!strcmp(&buffer[0],"quit\n"))
+        std::string buff, strsend;
+        std::getline(std::cin,buff);
+        rus(buff);
+        if (!strcmp(&buff[0],"quit"))
         {
             printf("Exit...");
-            closesocket(Connect);
+            closesocket(condata->Connect);
             WSACleanup();
             exit(0);
             break;
         }
-        while(buffer[bufferlen]) bufferlen++;
-        int count = 0;
-        for(; count < namelen; count++)res[count] = name[count];
-        for(int i = 0; i < bufferlen; i++) res[count++] = buffer[i];
-        shifr(res,key);
-        send(Connect,res,sizeof(res),0);
-        while(res[reslen]) reslen++;
-        for(int i = 0; i < reslen; i++) res[i] = '\0';
-        for(int i = 0; i < bufferlen; i++) buffer[i] = '\0';
-        namelen = b;
-        reslen = b;
-        bufferlen = b;
-        for (int i = 0; buffer[i] != 0; i++) buffer[i] = '\0';
+        strsend = condata->name+"\n"+condata->pwd+"\n"+buff+"\n";
+        crypt(strsend,key);
+        char sendchar[strlen(strsend.c_str())];
+        for(unsigned int i = 0; i < strlen(strsend.c_str()); i++) sendchar[i] = strsend[i];
+        send(condata->Connect, sendchar, sizeof(sendchar),0);
+        memset(sendchar,0,sizeof(sendchar));
     }
 }
 
-int main()
+void getpwd(std::string &pwd)
 {
-    int i = 0, connlen = 0, res2len = 0, counter = 0, namelen = 0, pwdlen = 0, count = 0, count2 = 0;
-    char buff[50000] = "", res2[1024] = "", name[1024] = "", pwd[1024] = "";
-    char conn[1024] = "<----CONNECTED TO CHAT\n";
-    printf("Chat client ver. 0.1\n");
-    printf("\n\nlogin:");
-    fgets(name,sizeof(name), stdin);
-    printf("password:");
-    for(i=0;(pwd[i] = getch()) != '\r';)   {
-        if(pwd[i]=='\b' && i!=0) {
+    char pwdchar[pwdsize] = "";
+    for(int i=0 ; (pwdchar[i] = getch()) != '\r'; )
+    {
+        if( pwdchar[i]=='\b' && i!=0 )
+        {
             printf("%s", "\b \b");
             i--;
         }
-        else if(pwd[i]!='\b') {
+        else if(pwdchar[i]!='\b')
+        {
             printf("%c", '*');
             i++;
         }
     }
-    pwd[i] = '\n';
-    i++;
-    pwd[i] = '\0';
+    pwdchar[strlen(pwdchar)-1] = '\0';
+    pwd = std::string(pwdchar);
+}
+
+int main()
+{
+    struct my_struct condata;
+    std::string conn = deffconn;
+    std::string name, strpwd, strsend;
+    printf("Chat client ver. 0.1\n");
+    printf("\n\nlogin:");
+    std::getline(std::cin, name);
+    printf("password:");
+    getpwd(strpwd);
     printf("\n");
     rus(name);
-    while(name[namelen])namelen++;
-    while(pwd[pwdlen]) pwdlen++;
-    while(namelen!=0){
-        res2[count] = name[count];
-        count++;
-        namelen--;
-    }
-    while(pwdlen!=0){
-        res2[count] = pwd[count2];
-        count++;
-        count2++;
-        pwdlen--;
-    }
-    res2[count] = '\0';
-
     WSAData data;
     WORD version = MAKEWORD(2,2);
     int res = WSAStartup(version,&data);
-    if(res!=0) {
+    if(res!=0)
+    {
         return 0;
     }
-    Connect = socket(AF_INET,SOCK_STREAM,0);
+    condata.Connect = socket(AF_INET,SOCK_STREAM,0);
     sockaddr_in hos_addr;
     hos_addr.sin_family=AF_INET;
     hos_addr.sin_port=htons(PORT);
@@ -201,63 +229,49 @@ int main()
     //if (inet_addr(SERVERADDR)!=INADDR_NONE)
     //hos_addr.sin_addr.s_addr=inet_addr(SERVERADDR);
     //else
-    if (hostt=gethostbyname(SERVERADDR)){
+    hostt = gethostbyname(SERVERADDR);
+    if (hostt){
         ((unsigned long *)&hos_addr.sin_addr)[0]=((unsigned long **)hostt->h_addr_list)[0][0];
     }
     else
     {
         printf("Wrong adress %s\n",SERVERADDR);
-        closesocket(Connect);
+        closesocket(condata.Connect);
         WSACleanup();
         return -1;
     }
-    if (connect(Connect,(sockaddr *)&hos_addr,sizeof(hos_addr)))
+    if (connect(condata.Connect,(sockaddr *)&hos_addr,sizeof(hos_addr)))
     {
         printf("Connect error %d\n",WSAGetLastError());
         return -1;
     }
-
-    while(conn[connlen]) connlen++;
-    while(res2[res2len]) res2len++;
-    while(connlen > 0){
-        res2[res2len++] = conn[counter++];
-        connlen--;
-    }
-    res2[res2len] = '\0';
-    shifr(res2,key);
-    send(Connect,res2, sizeof(res2), 0);
-    deshifr(res2,key);
-    res2len = 0;
-    while(res2[res2len]) res2len++;
-    res2len = res2len - 23;
-    res2[res2len] = '\0';
-    for(int i = (res2len+1); i < 23; i++) res2[i] = '\0';
+    strsend = name+"\n"+strpwd+"\n"+conn+"\n";
+    crypt(strsend,key);
+    char strsendchar[strlen(strsend.c_str())];
+    for(unsigned int i = 0; i < strlen(strsend.c_str()) ; i++) strsendchar[i] = strsend[i];
+    send(condata.Connect,strsendchar, sizeof(strsendchar), 0);
+    memset(strsendchar, 0, sizeof(strsendchar));
     printf("Connection on chat server: %s is stable\n\n",SERVERADDR);
-    for (int clear666 = 0; buff[clear666] != 0; clear666++) buff[clear666] = '\0';
-    for (int clear666 = 0; conn[clear666] != 0; clear666++) conn[clear666] = '\0';
-    for (int clear666 = 0; name[clear666] != 0; clear666++) name[clear666] = '\0';
-    for (int clear666 = 0; pwd[clear666] != 0; clear666++) pwd[clear666] = '\0';
-    for(;;Sleep(75))
+    condata.name = name;
+    condata.pwd = strpwd;
+    for(;;Sleep(sleeptime))
     {
-        if(recv(Connect,buff, sizeof(buff),0) !=SOCKET_ERROR){
-            deshifr(buff,key);
-            printf("%s",buff);
-            CreateThread(0,0,(LPTHREAD_START_ROUTINE)ReadMessageFromServer,0,0,0);
-            CreateThread(0,0,(LPTHREAD_START_ROUTINE)WriteMessageToServer,(LPVOID)res2,0,0);
-            for (int clear666 = 0; buff[clear666] != 0; clear666++) buff[clear666] = '\0';
+        char buff[buffersize] = "";
+        if(recv(condata.Connect,buff, sizeof(buff),0) !=SOCKET_ERROR){
+            std::string buffer = std::string(buff);
+            decrypt(buffer,key);
+            std::cout << buffer;
+            CreateThread(0,0,(LPTHREAD_START_ROUTINE)ReadMessageFromServer,(LPVOID)&condata,0,0);
+            CreateThread(0,0,(LPTHREAD_START_ROUTINE)WriteMessageToServer,(LPVOID)&condata,0,0);
         }
-        else {
+        else
+        {
             break;
         }
+        memset(buff, 0, sizeof(buff));
     }
-    for (int clear666 = 0; buff[clear666] != 0; clear666++) buff[clear666] = '\0';
-    for (int clear666 = 0; res2[clear666] != 0; clear666++) res2[clear666] = '\0';
-    for (int clear666 = 0; conn[clear666] != 0; clear666++) conn[clear666] = '\0';
-    for (int clear666 = 0; name[clear666] != 0; clear666++) name[clear666] = '\0';
-    for (int clear666 = 0; pwd[clear666] != 0; clear666++) pwd[clear666] = '\0';
-    i = 0, connlen = 0, res2len = 0, counter = 0, namelen = 0, pwdlen = 0, count = 0, count2 = 0;
-    shutdown(Connect,2);
-    closesocket(Connect);
+    shutdown(condata.Connect,2);
+    closesocket(condata.Connect);
     WSACleanup();
     printf("Exit...\n");
     return 1;

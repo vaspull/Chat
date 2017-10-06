@@ -10,11 +10,11 @@
 #define minlenghlogin 6
 #define maxlenghpwd 12
 #define minlenghpwd 6
-#define keysize 1024
 #define buffersize 50000
 #define sleeptime 750
+#define DEFPORT "7770"
 
-const char key[keysize] = "key";
+const std::string key = "key";
 
 struct my_struct
 {
@@ -251,9 +251,9 @@ void parcer(std:: string buffer, std::string &name, std::string &pwd, std::strin
 {
     if(!buffer.empty())
     {
-       int isname = 1, ispwd = 1, istext = 1;
-       unsigned int cur = 0;
-       std::string text;
+        int isname = 1, ispwd = 1, istext = 1;
+        unsigned int cur = 0;
+        std::string text;
         for(unsigned int i = 0; i < strlen(buffer.c_str());)
         {
             if(buffer[i]=='\n' && isname)
@@ -282,10 +282,19 @@ void parcer(std:: string buffer, std::string &name, std::string &pwd, std::strin
             }
             else
             {
-              i++;
+                i++;
             }
         }
-        res = name + ':' + text + '\n';
+        if(!isname && !ispwd && !istext)
+        {
+            res = name + ':' + text + '\n';
+        }
+        else
+        {
+            res.clear();
+            name.clear();
+            pwd.clear();
+        }
     }
 }
 
@@ -322,21 +331,10 @@ void SendMessageToClient(struct my_struct *condata)
         if (recv(condata->Connections[ID], buffer, sizeof(buffer), 0))
         {
             std::string name,pwd,res, buff = std::string(buffer);
+            memset(buffer,0,sizeof(buffer));
             decrypt(buff,key);
             parcer(buff, name, pwd, res);
-            if((valid(name,pwd) == 0) && connect(condata->Connections[ID],0,0) != SOCKET_ERROR)
-            {
-                logs.open("logs.txt", std::ios_base::app);
-                settime(time);
-                logs << time;
-                logs << ": client id: " << ID << " : authorization attempt with name: " << name <<" <-- NO VALID!!!\n";
-                logs.close();
-                send(condata->Connections[ID],accdenchar, sizeof(accdenchar), 0);
-                shutdown(condata->Connections[ID],2);
-                closesocket(condata->Connections[ID]);
-                break;
-            }
-            else if(!res.empty())
+            if(!res.empty()&& valid(name,pwd))
             {
                 logs.open("logs.txt", std::ios_base::app);
                 settime(time);
@@ -353,8 +351,23 @@ void SendMessageToClient(struct my_struct *condata)
                         send(condata->Connections[i], reschar, sizeof(reschar), 0);
                     }
                 }
+                memset(reschar,0,sizeof(reschar));
             }
-            else
+
+            else if(!valid(name,pwd))
+            {
+                logs.open("logs.txt", std::ios_base::app);
+                settime(time);
+                logs << time;
+                logs << ": client id: " << ID << " : authorization attempt with name: "<< "|" << name << "|" << " and pwd:"<< "|" << pwd << "|" <<" <-- NO VALID!!!\n";
+                logs.close();
+                send(condata->Connections[ID],accdenchar, sizeof(accdenchar), 0);
+                shutdown(condata->Connections[ID],2);
+                closesocket(condata->Connections[ID]);
+                break;
+            }
+
+            else if(connect(condata->Connections[ID],0,0) != SOCKET_ERROR)
             {
                 logs.open("logs.txt", std::ios_base::app);
                 settime(time);
@@ -375,9 +388,6 @@ void SendMessageToClient(struct my_struct *condata)
     }
 }
 
-
-
-
 int main()
 {
     struct my_struct condata;
@@ -389,10 +399,12 @@ int main()
     std::ofstream logs("logs.txt", std::ios_base::app);
     logs.close();
     FILE* pwd = fopen("pwd.txt", "r");
-    if (!pwd) {
+    if (!pwd)
+    {
         printf("File pwd.txt does not exist. Check paths.\n");
     }
-    else {
+    else
+    {
         printf("Pwd file ok... ");
     }
     fclose(pwd);
@@ -400,7 +412,8 @@ int main()
     WSAData data;
     WORD version = MAKEWORD(2,2);
     int res = WSAStartup(version,&data);
-    if(res!=0)  {
+    if(res!=0)
+    {
         return 0;
     }
     struct addrinfo hints;
@@ -411,7 +424,7 @@ int main()
     hints.ai_flags = AI_PASSIVE;
     hints.ai_socktype = SOCK_STREAM;
     hints.ai_protocol = IPPROTO_TCP;
-    getaddrinfo(NULL,"7770", &hints,&result);
+    getaddrinfo(NULL,DEFPORT, &hints,&result);
     Listen = socket(result->ai_family, result->ai_socktype,result->ai_protocol);
     bind(Listen,result->ai_addr,result->ai_addrlen);
     listen(Listen,SOMAXCONN);
@@ -445,7 +458,7 @@ int main()
                 logs.open("logs.txt", std::ios_base::app);
                 settime(time);
                 logs << time;
-                logs << ": client id: " << condata.ClientCount << " : authorization attempt with name: " << name <<" <-- NO VALID!!!\n";
+                logs << ": client id: " << condata.ClientCount << " : authorization attempt with name: "<< "|" << name << "|" << " and pwd:"<< "|" << pwd << "|" <<" <-- NO VALID!!!\n";
                 logs.close();
                 char accdenchar[strlen(accden.c_str())];
                 for(unsigned int i = 0; i < strlen(accden.c_str());i++) accdenchar[i] = accden[i];
@@ -454,6 +467,11 @@ int main()
                 closesocket(condata.Connections[condata.ClientCount]);
             }
             else {
+                logs.open("logs.txt", std::ios_base::app);
+                settime(time);
+                logs << time;
+                logs << ": client id: " << condata.ClientCount << " : authorization attempt with name: "<< "|" << name << "|" << " and pwd:"<< "|" << pwd << "|" <<" <---SUCCESS!!!\n";
+                logs.close();
                 crypt(res,key);
                 char reschar[strlen(res.c_str())];
                 for(unsigned int i = 0; i < strlen(res.c_str());i++) reschar[i] = res[i];
@@ -463,6 +481,7 @@ int main()
                 (condata.ClientCount)++;
                 CreateThread(0,0,(LPTHREAD_START_ROUTINE)SendMessageToClient,(LPVOID)&condata,0,0);
             }
+            memset(buffer,0,sizeof(buffer));
         }
     }
     return 1;
