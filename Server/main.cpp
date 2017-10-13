@@ -20,7 +20,7 @@ struct my_struct
 {
     SOCKET* Connections;
     int ClientCount = 0;
-    int ID;
+    int ID = 0;
 };
 
 void settime(char *t)
@@ -328,12 +328,13 @@ void SendMessageToClient(struct my_struct *condata)
         std::ofstream logs("logs.txt", std::ios_base::app);
         logs.close();
         char buffer[buffersize] ="";
-        if (recv(condata->Connections[ID], buffer, sizeof(buffer), 0))
+        if (recv((condata->Connections)[ID], buffer, sizeof(buffer), 0))
         {
             std::string name,pwd,res, buff = std::string(buffer);
             memset(buffer,0,sizeof(buffer));
             decrypt(buff,key);
             parcer(buff, name, pwd, res);
+            buff.clear();
             if(!res.empty()&& valid(name,pwd))
             {
                 logs.open("logs.txt", std::ios_base::app);
@@ -344,14 +345,30 @@ void SendMessageToClient(struct my_struct *condata)
                 crypt(itog,key);
                 char reschar[strlen(itog.c_str())];
                 for(unsigned int i = 0; i < strlen(itog.c_str());i++) reschar[i] = itog[i];
+                itog.clear();
+                res.clear();
+                name.clear();
+                pwd.clear();
                 for (int i = 0; i < condata->ClientCount; i++)
                 {
                     if (i!=ID)
                     {
-                        send(condata->Connections[i], reschar, sizeof(reschar), 0);
+                        send((condata->Connections)[i], reschar, sizeof(reschar), 0);
                     }
                 }
                 memset(reschar,0,sizeof(reschar));
+            }
+            else if(connect(condata->Connections[ID],0,0))
+            {
+                logs.open("logs.txt", std::ios_base::app);
+                settime(time);
+                logs << "[" << time << "] client id " << ID << " <- DISCONNECT!\n";
+                logs.close();
+                setsockopt(condata->Connections[ID],SOL_SOCKET,SO_LINGER,0,0);
+                shutdown((condata->Connections)[ID],2);
+                closesocket((condata->Connections)[ID]);
+                condata->Connections[ID] = '\0';
+                break;
             }
 
             else if(!valid(name,pwd))
@@ -360,27 +377,19 @@ void SendMessageToClient(struct my_struct *condata)
                 settime(time);
                 logs << "[" << time <<"] client id " << ID << " : authorization attempt with name: "<< "|" << name << "|" << " and pwd:"<< "|" << pwd << "|" <<" <-- NO VALID!!!\n";
                 logs.close();
-                send(condata->Connections[ID],accdenchar, sizeof(accdenchar), 0);
-                shutdown(condata->Connections[ID],2);
-                closesocket(condata->Connections[ID]);
+                send((condata->Connections)[ID],accdenchar, sizeof(accdenchar), 0);
+                shutdown((condata->Connections)[ID],2);
+                closesocket((condata->Connections)[ID]);
+                condata->Connections[ID] = '\0';
                 break;
             }
 
-            else if(connect(condata->Connections[ID],0,0) != SOCKET_ERROR)
-            {
-                logs.open("logs.txt", std::ios_base::app);
-                settime(time);
-                logs << "[" << time << "] client id " << ID << " <- DISCONNECT!\n";
-                logs.close();
-                shutdown(condata->Connections[ID],2);
-                closesocket(condata->Connections[ID]);
-                break;
-            }
         }
         else
         {
             shutdown(condata->Connections[ID],2);
             closesocket(condata->Connections[ID]);
+            condata->Connections[ID] = '\0';
             break;
         }
     }
@@ -435,8 +444,6 @@ int main()
     logs.close();
     std::string m_connect = "online\n\n";
     crypt(m_connect,key);
-    char m_connectchar[strlen(m_connect.c_str())];
-    for(unsigned int i = 0; i < strlen(m_connect.c_str());i++) m_connectchar[i] = m_connect[i];
     CreateThread(0,0,(LPTHREAD_START_ROUTINE)reguser,0,0,0);
     for(;;Sleep(75)) {
         if((Connect = accept(Listen,0,0)) != INVALID_SOCKET) {
@@ -450,6 +457,7 @@ int main()
             std::string name,pwd,res;
             recv(condata.Connections[condata.ClientCount], buffer, sizeof(buffer), 0);
             std::string buff = std::string(buffer);
+            memset(buffer,0,buffersize);
             decrypt(buff,key);
             parcer(buff, name, pwd, res);
             if(valid(name,pwd) == 0){
@@ -462,6 +470,7 @@ int main()
                 send(condata.Connections[condata.ClientCount],accdenchar, sizeof(accdenchar), 0);
                 shutdown(condata.Connections[condata.ClientCount],2);
                 closesocket(condata.Connections[condata.ClientCount]);
+                condata.Connections[condata.ClientCount] = '\0';
             }
             else {
                 logs.open("logs.txt", std::ios_base::app);
@@ -471,13 +480,23 @@ int main()
                 crypt(res,key);
                 char reschar[strlen(res.c_str())];
                 for(unsigned int i = 0; i < strlen(res.c_str());i++) reschar[i] = res[i];
-                for (int i = 0; i < condata.ClientCount; i++) send(condata.Connections[i], reschar, sizeof(reschar), 0);
+                int i =0;
+                for (i = 0; i < condata.ClientCount; i++) send(condata.Connections[i], reschar, sizeof(reschar), 0);
+                i=0;
+                memset(reschar,0,sizeof(reschar));
+                char m_connectchar[strlen(m_connect.c_str())];
+                for(unsigned int i = 0; i < strlen(m_connect.c_str());i++) m_connectchar[i] = m_connect[i];
                 send(condata.Connections[condata.ClientCount],m_connectchar,sizeof(m_connectchar),0);
+                memset(m_connectchar,0,sizeof(m_connectchar));
+                Sleep(20);
                 condata.ID = condata.ClientCount;
-                (condata.ClientCount)++;
+                condata.ClientCount++;
                 CreateThread(0,0,(LPTHREAD_START_ROUTINE)SendMessageToClient,(LPVOID)&condata,0,0);
             }
-            memset(buffer,0,sizeof(buffer));
+            buff.clear();
+            name.clear();
+            pwd.clear();
+            res.clear();
         }
     }
     return 1;
