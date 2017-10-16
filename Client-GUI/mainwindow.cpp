@@ -10,6 +10,8 @@ struct my_struct
     std::string str;
     std::string str2;
     int isShow = 1;
+    int isCheck = 0;
+    int isCheck2 = 0;
     char srv[20] = "";
     unsigned short prt;
 }condata;
@@ -108,6 +110,31 @@ void decrypt (std::string &res, const std::string key)
 
 MyWindow::MyWindow(QWidget *parent) : QDialog(parent)
 {
+    trayIcon = new QSystemTrayIcon(this);
+    QIcon trayImage(":/images/1.png");
+
+    trayIcon -> setIcon(trayImage);
+    trayIcon->setToolTip("Chat Client GUI" "\n");
+
+    QMenu * menu = new QMenu(this);
+    QAction * viewWindow = new QAction("Развернуть окно", this);
+    QAction * quitAction = new QAction("Выход", this);
+
+
+    connect(viewWindow, SIGNAL(triggered()), this, SLOT(show()));
+    connect(quitAction, SIGNAL(triggered()), this, SLOT(close()));
+
+    menu->addAction(viewWindow);
+    menu->addAction(quitAction);
+
+
+    trayIcon->setContextMenu(menu);
+    trayIcon->show();
+
+
+    connect(trayIcon, SIGNAL(activated(QSystemTrayIcon::ActivationReason)),
+            this, SLOT(iconActivated(QSystemTrayIcon::ActivationReason)));
+
     lbl = new QLabel("Список пользователей");
     lbl2 = new QLabel("Твой ник: ");
     lbl3 = new QLabel();
@@ -161,12 +188,14 @@ info::info(QWidget *parent) : QDialog(parent)
     line2->setEchoMode(QLineEdit::Password);
     line3 = new QLineEdit;
     line4 = new QLineEdit;
+    cb1 = new QCheckBox("Сворачивать в трей при закрытии");
+    cb2 = new QCheckBox("Отключить уведомления");
     ok =  new QPushButton("Ok");
     ok->setDefault(true);
     ok->setAutoDefault(true);
     closed = new QPushButton("Выход");
     save1 = new QPushButton("Записать учетные данные");
-    save2 = new QPushButton("Записать данные сервера");
+    save2 = new QPushButton("Сохранить настройки");
     QVBoxLayout *left = new QVBoxLayout;
     left->addWidget(lbl);
     left->addWidget(lbl2);
@@ -181,9 +210,13 @@ info::info(QWidget *parent) : QDialog(parent)
     right->addWidget(line4);
     right->addWidget(save2);
     right->addWidget(closed);
-    QHBoxLayout *main = new QHBoxLayout;
-    main->addLayout(left);
-    main->addLayout(right);
+    QHBoxLayout *main1 = new QHBoxLayout;
+    main1->addLayout(left);
+    main1->addLayout(right);
+    QVBoxLayout *main = new QVBoxLayout;
+    main->addLayout(main1);
+    main->addWidget(cb1);
+    main->addWidget(cb2);
     setLayout(main);
     connect(closed,SIGNAL(clicked(bool)),this,SLOT(close()));
     connect(ok,SIGNAL(clicked(bool)),this,SLOT(okey()));
@@ -218,17 +251,33 @@ info::info(QWidget *parent) : QDialog(parent)
     finde.clear(),name.clear(),pwd.clear();
 
     readname.open("conf.txt",std::ifstream::in);
-    for(;std::getline(readname,finde);)
+
+    for(int i = 0;std::getline(readname,finde);i++)
     {
-        if(srv.empty())
+        if(i==0)
         {
             srv = finde;
         }
-        else
+        else if(i==1)
         {
             port = finde;
         }
+        else if(i==2)
+        {
+            if(finde=="1")
+            {
+                cb1->setChecked(true);
+            }
+        }
+        else if(i==3)
+        {
+            if(finde=="1")
+            {
+                cb2->setChecked(true);
+            }
+        }
     }
+
     if(!srv.empty())
     {
         line3->setText(QString::fromStdString(srv));
@@ -237,9 +286,11 @@ info::info(QWidget *parent) : QDialog(parent)
     {
         line4->setText(QString::fromStdString(port));
     }
-    readname.close();
     srv.clear(),port.clear(),finde.clear();
 
+
+    readname.close();
+    finde.clear();
 }
 
 void info::sav1()
@@ -255,7 +306,23 @@ void info::sav1()
 void info::sav2()
 {
     std::ofstream write("conf.txt",std::ofstream::trunc);
-    write << QString(line3->text()).toStdString() << '\n' << QString(line4->text()).toStdString();
+    write << QString(line3->text()).toStdString() << '\n' << QString(line4->text()).toStdString() << '\n';
+    if(cb1->isChecked())
+    {
+        write << 1 << '\n';
+    }
+    else
+    {
+        write << 0 << '\n';
+    }
+    if(cb2->isChecked())
+    {
+        write << 1 << '\n';
+    }
+    else
+    {
+        write << 0 << '\n';
+    }
     write.close();
 }
 
@@ -272,11 +339,28 @@ void info::okey()
     }
 
 
-    if(!condata.name.empty()&&!condata.pwd.empty())
+    if(!condata.name.empty( )&& !condata.pwd.empty() && !line3->text().isEmpty() && !line4->text().isEmpty())
     {
+        if(cb1->isChecked())
+        {
+            condata.isCheck = 1;
+        }
+        else
+        {
+            condata.isCheck = 0;
+        }
+        if(cb2->isChecked())
+        {
+            condata.isCheck2 = 1;
+        }
+        else
+        {
+            condata.isCheck2 = 0;
+        }
         info::close();
         emit getok();
-    }    
+
+    }
 }
 
 void info::getinfo()
@@ -361,7 +445,24 @@ void MyWindow::read()
 {
     if(condata.str!=condata.str2)
     {
-        edittext->textCursor().insertText(QString::fromStdString(condata.str));
+        if(!this->isVisible())
+        {
+            trayIcon->setToolTip("Есть не прочитанные сообщения!");
+            trayIcon -> setIcon(QIcon(":/images/3.png"));
+            if(!condata.isCheck2)
+            {
+                QSystemTrayIcon::MessageIcon icon = QSystemTrayIcon::MessageIcon(QSystemTrayIcon::Information);
+                trayIcon->showMessage("Chat Client GUI",
+                                      "Получено новое сообщение!",
+                                      icon,
+                                      2000);
+            }
+            edittext->textCursor().insertText(QString::fromStdString(condata.str));
+        }
+        else
+        {
+            edittext->textCursor().insertText(QString::fromStdString(condata.str));
+        }
     }
 
     if(condata.str == "access denied, push enter to continue\n")
@@ -385,6 +486,7 @@ void MyWindow::read()
     }
     else if(condata.str == "server offline\n")
     {
+        trayIcon -> setIcon(QIcon(":/images/1.png"));
         lbl4->setText("Сервер офлайн");
         lbl4->setStyleSheet("color: rgb(227,38,54)");
         send(condata.Connect,"gubabo", 10, 0);
@@ -402,15 +504,12 @@ void MyWindow::read()
         condata.str = "";
         condata.str2 = "";
     }
-    //else
-    //{
     condata.str2 = condata.str;
     usleep(1000);
     if(!condata.isConnected)
     {
         QMetaObject::invokeMethod(this, "read", Qt::QueuedConnection);
     }
-    //}
 }
 
 void MyWindow::con()
@@ -421,14 +520,6 @@ void MyWindow::con()
         this->show();
         condata.isShow = 0;
     }
-
-    //    if(condata.name.empty() || condata.pwd.empty())
-    //    {
-    //        emit getinfosignal();
-    //    }
-
-    //    if (!condata.name.empty()&&!condata.pwd.empty())
-    //    {
     if(condata.isConnected)
     {
         std::string conne = deffconn;
@@ -470,6 +561,7 @@ void MyWindow::con()
             }
             else
             {
+                trayIcon -> setIcon(QIcon(":/images/2.png"));
                 edittext->textCursor().insertText(QString::fromStdString(condata.str));
                 condata.str2 = condata.str;
                 CreateThread(0,0,(LPTHREAD_START_ROUTINE)ReadMessageFromServer,0,0,0);
@@ -502,6 +594,7 @@ void MyWindow::con()
     }
     else
     {
+        trayIcon -> setIcon(QIcon(":/images/1.png"));
         condata.isConnected = 1;
         send(condata.Connect,"gubabo", 10, 0);
         shutdown(condata.Connect,2);
@@ -518,9 +611,53 @@ void MyWindow::con()
         options->setEnabled(true);
     }
 }
-//}
 
 
+void MyWindow::closeEvent(QCloseEvent * event)
+{
+    if(this->isVisible() && condata.isCheck)
+    {
+        event->ignore();
+        this->hide();
+        if(!condata.isCheck2)
+        {
+            QSystemTrayIcon::MessageIcon icon = QSystemTrayIcon::MessageIcon(QSystemTrayIcon::Information);
+            trayIcon->showMessage("Chat Client GUI",
+                                  "Приложение свернуто в трей. Для того чтобы, "
+                                  "развернуть окно приложения, щелкните по иконке приложения в трее",
+                                  icon,
+                                  2000);
+        }
+    }
+}
 
-
-
+void MyWindow::iconActivated(QSystemTrayIcon::ActivationReason reason)
+{
+    switch (reason)
+    {
+    case QSystemTrayIcon::Trigger:
+        if(condata.isCheck)
+        {
+            if(!this->isVisible())
+            {
+                trayIcon->setToolTip("Chat Client GUI" "\n");
+                if(!condata.isConnected)
+                {
+                    trayIcon -> setIcon(QIcon(":/images/2.png"));
+                }
+                else
+                {
+                    trayIcon -> setIcon(QIcon(":/images/1.png"));
+                }
+                this->show();
+            }
+            else
+            {
+                this->hide();
+            }
+        }
+        break;
+    default:
+        break;
+    }
+}

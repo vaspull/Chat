@@ -32,3 +32,6 @@ HEADERS += \
         mainwindow.h
 
 FORMS +=
+
+RESOURCES += \
+    source.qrc

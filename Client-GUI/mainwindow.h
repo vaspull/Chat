@@ -1,6 +1,11 @@
 #ifndef MYWINDOW_H
 #define MYWINDOW_H
 
+#include <QCheckBox>
+#include <QCloseEvent>
+#include <QMenu>
+#include <QSystemTrayIcon>
+#include <QAction>
 #include <QDialog>
 #include <QLabel>
 #include <QLineEdit>
@@ -38,6 +43,8 @@ class MyWindow : public QDialog
 
 public:
     MyWindow(QWidget *parent=0);
+protected:
+    void closeEvent(QCloseEvent * event);
 private:
     QLabel *lbl;
     QLabel *lbl2;
@@ -49,11 +56,13 @@ private:
     QPushButton *options;
     QTextEdit *edittext;
     QTextEdit *edittext2;
+    QSystemTrayIcon * trayIcon;
 private slots:
     void con();
     void sen();
     void read();
     void opt();
+    void iconActivated(QSystemTrayIcon::ActivationReason reason);
 signals:
     void getinfosignal();
 };
@@ -68,14 +77,16 @@ private:
     QLabel *lbl2;
     QLabel *lbl3;
     QLabel *lbl4;
-    QLineEdit *line4;
     QLineEdit *line;
     QLineEdit *line2;
     QLineEdit *line3;
+    QLineEdit *line4;
     QPushButton *ok;
     QPushButton *closed;
     QPushButton *save1;
     QPushButton *save2;
+    QCheckBox *cb1;
+    QCheckBox *cb2;
 public slots:
     void getinfo();
     void okey();
