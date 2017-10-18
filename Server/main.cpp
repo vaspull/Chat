@@ -11,17 +11,138 @@
 #define maxlenghpwd 12
 #define minlenghpwd 6
 #define buffersize 50000
-#define sleeptime 750
+#define sleeptime 200
 #define DEFPORT "7770"
 
 const std::string key = "key";
+
+class Elemlist                          //We describe a class list of the elements of the structure Elem
+{
+private:
+    struct Elem                         //Describe the structure of a linked list
+    {
+        std::string data;                    //The information includes a list item
+        Elem* next;                     //Pointer to the next element
+        Elem* prev;                     //A pointer to the previous element
+    };
+    int counter;                        //Counter items
+    Elem* first;                        //Pointer to the first element of the list
+    Elem* last;                         //Pointer to the last item in the list
+public:
+    Elemlist()
+    {
+        counter = 0;
+        first = NULL;
+        last = NULL;
+    }
+
+    void add(std::string d)                   //A method of adding a new item to the list
+    {
+        Elem *newelem = new Elem;        //Memory allocation for the new element
+        newelem -> data = d;             //We set the value of data to the new structure element
+        newelem -> next = NULL;          //Assigning a pointer to the next element to NULL
+        counter++;                       //Increase the value of the counter elements
+        if ( first == NULL )             //Checking if the list is empty - a new element of the structure will be the first and last at the same time, the previous will be NULL
+        {
+            first = newelem;
+            newelem -> prev = NULL;
+            last=first;
+        }
+        else
+        {
+            newelem -> prev = last;      //A pointer to the previous element, for the new element will be the previous recently added
+            last -> next = newelem;      //A pointer to the next element appearing after the last existing element that is the one that is now adding
+            last = newelem;              //A new element becomes the last in the list
+        }
+    }
+
+    void del(int v)                     //Removal of any element
+    {
+        if ( counter == 0 )             //If the list is empty, then display a message indicating an empty list
+        {
+        }
+        else if ( ( v > counter ) || ( v < 1 ) ) //If the number is more than the element to remove all items in the list or negative, then an error message
+        {
+        }
+        else if ( ( v == 1 ) and ( first -> next ) ) //If the first element is removed, but the list of more than 1 item
+        {
+            Elem *delelem = first;
+            first = first -> next;
+            first -> prev = NULL;
+            delete delelem;
+            counter--;
+        }
+        else if ( ( v == 1 ) and ( first == last ) ) //If you delete the first and only item
+        {
+            first -> next = NULL;
+            first -> prev=NULL;
+            first = NULL;
+            last = NULL;
+            delete first;
+            counter--;
+        }
+        else if ( (v == counter) )                 //If you delete the last item
+        {
+            Elem *delelem = last;
+            last = last -> prev;
+            last -> next = NULL;
+            delete delelem;
+            counter--;
+        }
+        else                                       //Remove item from the middle of the list
+        {
+            Elem *delelem = first;
+            Elem *delelem2;
+            for ( int i = 1 ; i < v ; i++ ) delelem = delelem -> next;
+            delelem2 = delelem;
+            delelem2 -> prev -> next = delelem -> next; //Indicates that the next item to the fact that it is facing a removable element which is removed after
+            delelem2 -> next -> prev = delelem -> prev; //Point out that the previous element for what is to be removed after an element that stands in front of removable
+            delete delelem;
+            counter--;
+        }
+    }
+
+    void vivod()
+    {
+        Elem *info = first;
+        while(info)
+        {
+            std::cout << info->data << std::endl;
+            info = info -> next;
+        }
+    }
+
+    void sss(std::string name,int &i)
+    {
+        Elem *info = first;
+        for(i=1;info&&info->data!=name;i++)
+        {
+            info = info -> next;
+        }
+    }
+
+    void result(std::string &result)
+    {
+        result.clear();
+        Elem *info = first;
+        while(info)
+        {
+            result += info->data + '\n';
+            info = info -> next;
+        }
+
+    }
+};
 
 struct my_struct
 {
     SOCKET* Connections;
     int ClientCount = 0;
     int ID = 0;
+    Elemlist m;
+    std::string name;
 };
+
 
 void settime(char *t)
 {
@@ -287,7 +408,7 @@ void parcer(std:: string buffer, std::string &name, std::string &pwd, std::strin
         }
         if(!isname && !ispwd && !istext)
         {
-            res = name + ':' + text + '\n';
+            res = name + ": " + text + '\n';
         }
         else
         {
@@ -317,6 +438,7 @@ int valid(std::string name, std::string pwd)
 
 void SendMessageToClient(struct my_struct *condata)
 {
+    std::string name2 = condata->name;
     int ID = condata->ID;
     std::string accden = "access denied, push enter to continue\n";
     crypt(accden,key);
@@ -351,19 +473,44 @@ void SendMessageToClient(struct my_struct *condata)
                 pwd.clear();
                 for (int i = 0; i < condata->ClientCount; i++)
                 {
-                    if (i!=ID)
-                    {
+                    //if (i!=ID)
+                    //{
                         send((condata->Connections)[i], reschar, sizeof(reschar), 0);
-                    }
+                    //}
                 }
                 memset(reschar,0,sizeof(reschar));
             }
             else if(connect(condata->Connections[ID],0,0))
             {
+
                 logs.open("logs.txt", std::ios_base::app);
                 settime(time);
-                logs << "[" << time << "] client id " << ID << " <- DISCONNECT!\n";
+
+                std::string skobka = "[";
+                std::string diss = skobka + time + "] "  + name2 + " <- DISCONNECT!\n";
+                crypt(diss,key);
+                char disschar[strlen(diss.c_str())];
+                for(unsigned int i = 0; i < strlen(diss.c_str());i++) disschar[i] = diss[i];
+                for (int i = 0; i < condata->ClientCount; i++)
+                    if (i!=ID)
+                    {
+                        send(condata->Connections[i],disschar,sizeof(disschar),0);
+                    }
+                memset(disschar,0,sizeof(disschar));
+                diss.clear();
+                logs << "[" << time << "] client id " << ID << " name " << name2 <<" <- DISCONNECT!\n";
                 logs.close();
+                Sleep(200);
+                int cou;
+                condata->m.sss(name2,cou);
+                condata->m.del(cou);
+                std::string result;
+                condata->m.result(result);
+                crypt(result,key);
+                char resultchar[strlen(result.c_str())];
+                for(unsigned int i = 0; i < strlen(result.c_str());i++) resultchar[i] = result[i];
+                for (int i = 0; i < condata->ClientCount; i++) send(condata->Connections[i],resultchar,sizeof(resultchar),0);
+                memset(resultchar,0,sizeof(resultchar));
                 setsockopt(condata->Connections[ID],SOL_SOCKET,SO_LINGER,0,0);
                 shutdown((condata->Connections)[ID],2);
                 closesocket((condata->Connections)[ID]);
@@ -395,8 +542,10 @@ void SendMessageToClient(struct my_struct *condata)
     }
 }
 
+
 int main()
 {
+    std::string q;
     struct my_struct condata;
     std::string accden = "access denied, push enter to continue\n";
     crypt(accden,key);
@@ -473,21 +622,33 @@ int main()
                 condata.Connections[condata.ClientCount] = '\0';
             }
             else {
+                condata.name = name;
+                condata.m.add(name);
                 logs.open("logs.txt", std::ios_base::app);
                 settime(time);
                 logs << "[" << time << "] client id " << condata.ClientCount << " : authorization attempt with name: "<< "|" << name << "|" << " and pwd:"<< "|" << pwd << "|" <<" <---SUCCESS!!!\n";
                 logs.close();
-                crypt(res,key);
-                char reschar[strlen(res.c_str())];
-                for(unsigned int i = 0; i < strlen(res.c_str());i++) reschar[i] = res[i];
-                int i =0;
-                for (i = 0; i < condata.ClientCount; i++) send(condata.Connections[i], reschar, sizeof(reschar), 0);
-                i=0;
-                memset(reschar,0,sizeof(reschar));
+                Sleep(200);
+                std::string itog = "["+std::string(time)+"] "+ res;
+                crypt(itog,key);
+                char itogchar[strlen(itog.c_str())];
+                for(unsigned int i = 0; i < strlen(itog.c_str());i++) itogchar[i] = itog[i];
+                itog.clear();
+                for (int i = 0; i < condata.ClientCount; i++) send(condata.Connections[i], itogchar, sizeof(itogchar), 0);
+                memset(itogchar,0,sizeof(itogchar));
+                Sleep(200);
                 char m_connectchar[strlen(m_connect.c_str())];
                 for(unsigned int i = 0; i < strlen(m_connect.c_str());i++) m_connectchar[i] = m_connect[i];
                 send(condata.Connections[condata.ClientCount],m_connectchar,sizeof(m_connectchar),0);
                 memset(m_connectchar,0,sizeof(m_connectchar));
+                std::string result;
+                condata.m.result(result);
+                crypt(result,key);
+                Sleep(200);
+                char resultchar[strlen(result.c_str())];
+                for(unsigned int i = 0; i < strlen(result.c_str());i++) resultchar[i] = result[i];
+                for (int i = 0; i <= condata.ClientCount; i++) send(condata.Connections[i],resultchar,sizeof(resultchar),0);
+                memset(resultchar,0,sizeof(resultchar));
                 Sleep(20);
                 condata.ID = condata.ClientCount;
                 condata.ClientCount++;

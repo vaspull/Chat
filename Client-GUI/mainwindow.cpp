@@ -398,7 +398,7 @@ void startconnection(int &isConnect)
 
 void ReadMessageFromServer()
 {
-    for ( ;!condata.isConnected; )
+    for ( ;!condata.isConnected; Sleep(200))
     {
         char buffer[buffersize] = "";
         if (recv(condata.Connect, buffer, sizeof(buffer), 0) != SOCKET_ERROR)
@@ -425,86 +425,104 @@ void ReadMessageFromServer()
 
 void MyWindow::sen()
 {
-    QString str1 = line->text();
-    edittext->moveCursor(QTextCursor::End);
-    edittext->textCursor().insertText("Ты:");
-    edittext->textCursor().insertText(str1);
-    edittext->textCursor().insertText("\n");
+    QString str = line->text();
     line->setText("");
-    std::string buff = QString(str1).toStdString();
+    std::string buff = QString(str).toStdString();
     std::string strsend = condata.name+"\n"+condata.pwd+"\n"+buff+"\n";
     crypt(strsend,key);
     char sendchar[strlen(strsend.c_str())];
     for(unsigned int i = 0; i < strlen(strsend.c_str()); i++) sendchar[i] = strsend[i];
     send(condata.Connect, sendchar, sizeof(sendchar),0);
-    memset(sendchar,0,sizeof(sendchar));
 }
 
 
 void MyWindow::read()
 {
-    if(condata.str!=condata.str2)
+    if(condata.str != condata.str2)
     {
-        if(!this->isVisible())
+        condata.str2 = condata.str;
+        if(condata.str == "access denied, push enter to continue\n")
         {
-            trayIcon->setToolTip("Есть не прочитанные сообщения!");
-            trayIcon -> setIcon(QIcon(":/images/3.png"));
-            if(!condata.isCheck2)
+            edittext->clear();
+            edittext->setEnabled(false);
+            edittext2->clear();
+            lbl4->setText("Доступ запрещен");
+            lbl4->setStyleSheet("color: rgb(227,38,54)");
+            conn->setText("Подключение");
+            sendmessage->setEnabled(false);
+            options->setEnabled(true);
+            condata.Connect = 0;
+            condata.isConnected = 1;
+            condata.str = "";
+            condata.str2 = "";
+            send(condata.Connect,"gubabo", 10, 0);
+            shutdown(condata.Connect,2);
+            closesocket(condata.Connect);
+            WSACleanup();
+        }
+        else if(condata.str == "server offline\n")
+        {
+            edittext->clear();
+            edittext->setEnabled(false);
+            edittext2->clear();
+            lbl4->setText("Сервер офлайн");
+            lbl4->setStyleSheet("color: rgb(227,38,54)");
+            conn->setText("Подключение");
+            sendmessage->setEnabled(false);
+            options->setEnabled(true);
+            condata.Connect = 0;
+            condata.isConnected = 1;
+            condata.str = "";
+            condata.str2 = "";
+            send(condata.Connect,"gubabo", 10, 0);
+            shutdown(condata.Connect,2);
+            closesocket(condata.Connect);
+            WSACleanup();
+        }
+        else if(condata.str == "")
+        {
+            edittext->clear();
+            edittext->setEnabled(false);
+            edittext2->clear();
+            lbl4->setText("Разрыв соединения");
+            lbl4->setStyleSheet("color: rgb(227,38,54)");
+            conn->setText("Подключение");
+            sendmessage->setEnabled(false);
+            options->setEnabled(true);
+            condata.Connect = 0;
+            condata.isConnected = 1;
+            condata.str = "";
+            condata.str2 = "";
+            send(condata.Connect,"gubabo", 10, 0);
+            shutdown(condata.Connect,2);
+            closesocket(condata.Connect);
+            WSACleanup();
+        }
+        else if(condata.str[0] == 91)
+        {
+            if(!this->isVisible())
             {
-                QSystemTrayIcon::MessageIcon icon = QSystemTrayIcon::MessageIcon(QSystemTrayIcon::Information);
-                trayIcon->showMessage("Chat Client GUI",
-                                      "Получено новое сообщение!",
-                                      icon,
-                                      2000);
+                trayIcon->setToolTip("Есть не прочитанные сообщения!");
+                trayIcon -> setIcon(QIcon(":/images/3.png"));
+                if(!condata.isCheck2)
+                {
+                    QSystemTrayIcon::MessageIcon icon = QSystemTrayIcon::MessageIcon(QSystemTrayIcon::Information);
+                    trayIcon->showMessage("Chat Client GUI",
+                                          "Получено новое сообщение!",
+                                          icon,
+                                          2000);
+                }
             }
+            edittext->moveCursor(QTextCursor::End);
             edittext->textCursor().insertText(QString::fromStdString(condata.str));
         }
         else
         {
-            edittext->textCursor().insertText(QString::fromStdString(condata.str));
+            edittext2->clear();
+            edittext2->textCursor().insertText(QString::fromStdString(condata.str));
         }
     }
 
-    if(condata.str == "access denied, push enter to continue\n")
-    {
-        lbl4->setText("Доступ запрещен");
-        lbl4->setStyleSheet("color: rgb(227,38,54)");
-        send(condata.Connect,"gubabo", 10, 0);
-        shutdown(condata.Connect,2);
-        closesocket(condata.Connect);
-        WSACleanup();
-        conn->setText("Подключение");
-        condata.isConnected = 1;
-        sendmessage->setEnabled(false);
-        edittext->setEnabled(false);
-        edittext->clear();
-        options->setEnabled(true);
-        condata.Connect = 0;
-        condata.isConnected = 1;
-        condata.str = "";
-        condata.str2 = "";
-    }
-    else if(condata.str == "server offline\n")
-    {
-        trayIcon -> setIcon(QIcon(":/images/1.png"));
-        lbl4->setText("Сервер офлайн");
-        lbl4->setStyleSheet("color: rgb(227,38,54)");
-        send(condata.Connect,"gubabo", 10, 0);
-        shutdown(condata.Connect,2);
-        closesocket(condata.Connect);
-        WSACleanup();
-        conn->setText("Подключение");
-        condata.isConnected = 1;
-        sendmessage->setEnabled(false);
-        edittext->setEnabled(false);
-        edittext->clear();
-        options->setEnabled(true);
-        condata.Connect = 0;
-        condata.isConnected = 1;
-        condata.str = "";
-        condata.str2 = "";
-    }
-    condata.str2 = condata.str;
     usleep(1000);
     if(!condata.isConnected)
     {
@@ -540,6 +558,7 @@ void MyWindow::con()
             condata.str = buff;
             if(buff=="access denied, push enter to continue\n")
             {
+                edittext2->clear();
                 buff.clear();
                 edittext->setText("access denied");
                 lbl3->setText("");
@@ -578,6 +597,7 @@ void MyWindow::con()
         }
         else
         {
+            edittext2->clear();
             lbl4->setText("Ошибка подключения");
             lbl4->setStyleSheet("color: rgb(227,38,54)");
             send(condata.Connect,"gubabo", 10, 0);
@@ -594,6 +614,7 @@ void MyWindow::con()
     }
     else
     {
+        edittext2->clear();
         trayIcon -> setIcon(QIcon(":/images/1.png"));
         condata.isConnected = 1;
         send(condata.Connect,"gubabo", 10, 0);
