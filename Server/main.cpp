@@ -325,7 +325,7 @@ void crypt (std::string &res, const std::string key)
         {
             if(i<strlen(res.c_str()))
             {
-                res[i] = res[i]+key[a]+keydigit;
+                res[i] = res[i]+key[a]+keydigit-100;
                 i++;
             }
             else
@@ -349,7 +349,7 @@ void decrypt (std::string &res, const std::string key)
         {
             if( i < strlen(res.c_str()) )
             {
-                res[i] = res[i]-key[a]-keydigit;
+                res[i] = res[i]-key[a]-keydigit+100;
                 i++;
             }
             else

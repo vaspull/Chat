@@ -64,7 +64,7 @@ void crypt (std::string &res, const std::string key)
         {
             if(i<strlen(res.c_str()))
             {
-                res[i] = res[i]+key[a]+keydigit;
+                res[i] = res[i]+key[a]+keydigit-100;
                 i++;
             }
             else
@@ -88,7 +88,7 @@ void decrypt (std::string &res, const std::string key)
         {
             if( i < strlen(res.c_str()) )
             {
-                res[i] = res[i]-key[a]-keydigit;
+                res[i] = res[i]-key[a]-keydigit+100;
                 i++;
             }
             else
@@ -110,6 +110,8 @@ void decrypt (std::string &res, const std::string key)
 
 MyWindow::MyWindow(QWidget *parent) : QDialog(parent)
 {
+    QTextCodec::setCodecForLocale(QTextCodec::codecForName("utf8"));
+
     trayIcon = new QSystemTrayIcon(this);
     QIcon trayImage(":/images/1.png");
 
@@ -429,12 +431,11 @@ void MyWindow::sen()
     QString str = line->text();
     line->clear();
     usleep(2500);
-
     std::string buff = QString(str).toStdString();
     std::string strsend = condata.name+"\n"+condata.pwd+"\n"+buff+"\n";
-
     crypt(strsend,key);
-    char sendchar[strlen(strsend.c_str())];
+    char sendchar[strlen(strsend.c_str())+2];
+    for(unsigned int i = 0; i < strlen(strsend.c_str())+2;i++) sendchar[i] = '\0';
     for(unsigned int i = 0; i < strlen(strsend.c_str()); i++) sendchar[i] = strsend[i];
     send(condata.Connect, sendchar, sizeof(sendchar),0);
     sendmessage->setEnabled(true);

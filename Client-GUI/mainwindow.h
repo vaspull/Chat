@@ -1,6 +1,7 @@
 #ifndef MYWINDOW_H
 #define MYWINDOW_H
 
+#include <QTextCodec>
 #include <QCheckBox>
 #include <QCloseEvent>
 #include <QMenu>
