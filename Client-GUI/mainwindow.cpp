@@ -379,7 +379,7 @@ void startconnection(int &isConnect)
     WSAData data;
     WORD version = MAKEWORD(2,2);
     WSAStartup(version,&data);
-    condata.Connect = socket(AF_INET,SOCK_STREAM,0);
+    condata.Connect = socket(AF_INET,SOCK_STREAM,IPPROTO_TCP);
     sockaddr_in hos_addr;
     hos_addr.sin_family=AF_INET;
     hos_addr.sin_port = htons(condata.prt);
@@ -425,14 +425,19 @@ void ReadMessageFromServer()
 
 void MyWindow::sen()
 {
+    sendmessage->setEnabled(false);
     QString str = line->text();
-    line->setText("");
+    line->clear();
+    usleep(2500);
+
     std::string buff = QString(str).toStdString();
     std::string strsend = condata.name+"\n"+condata.pwd+"\n"+buff+"\n";
+
     crypt(strsend,key);
     char sendchar[strlen(strsend.c_str())];
     for(unsigned int i = 0; i < strlen(strsend.c_str()); i++) sendchar[i] = strsend[i];
     send(condata.Connect, sendchar, sizeof(sendchar),0);
+    sendmessage->setEnabled(true);
 }
 
 

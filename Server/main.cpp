@@ -457,7 +457,7 @@ void SendMessageToClient(struct my_struct *condata)
             decrypt(buff,key);
             parcer(buff, name, pwd, res);
             buff.clear();
-            if(!res.empty()&& valid(name,pwd))
+            if(!res.empty() && valid(name,pwd))
             {
                 logs.open("logs.txt", std::ios_base::app);
                 settime(time);
