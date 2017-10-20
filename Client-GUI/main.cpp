@@ -1,18 +1,15 @@
+#include "mainwindow.h"
 #include <QApplication>
-#include <mainwindow.h>
 
-int main(int argc, char **argv)
+
+
+int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
-    MyWindow *window = new MyWindow();
+    MainWindow *w = new MainWindow();
     info *inf = new info;
     inf->show();
-
-//    QTextCodec::setCodecForTr(QTextCodec::codecForName("utf8"));
-//    QTextCodec::setCodecForLocale(QTextCodec::codecForName("utf8"));
-
-    QObject::connect(window,SIGNAL(getinfosignal()),inf,SLOT(getinfo()));
-    QObject::connect(inf,SIGNAL(getok()),window,SLOT(con()));
-
+    QObject::connect(w,SIGNAL(show_option_window()),inf,SLOT(show_options_window()));
+    QObject::connect(inf,SIGNAL(push_to_connect_button()),w,SLOT(on_connect_button_clicked()));
     return a.exec();
 }

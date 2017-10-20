@@ -1,6 +1,6 @@
 #-------------------------------------------------
 #
-# Project created by QtCreator 2017-10-11T15:53:00
+# Project created by QtCreator 2017-10-19T15:11:24
 #
 #-------------------------------------------------
 
@@ -8,7 +8,7 @@ QT       += core gui
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-TARGET = Client-GUI
+TARGET = Chat_Client_GUI
 TEMPLATE = app
 
 # The following define makes your compiler emit warnings if you use
@@ -31,7 +31,8 @@ LIBS += -lws2_32
 HEADERS += \
         mainwindow.h
 
-FORMS +=
+FORMS += \
+        mainwindow.ui
 
 RESOURCES += \
-    source.qrc
+    sources.qrc

@@ -511,7 +511,7 @@ void SendMessageToClient(struct my_struct *condata)
                 for(unsigned int i = 0; i < strlen(result.c_str());i++) resultchar[i] = result[i];
                 for (int i = 0; i < condata->ClientCount; i++) send(condata->Connections[i],resultchar,sizeof(resultchar),0);
                 memset(resultchar,0,sizeof(resultchar));
-                setsockopt(condata->Connections[ID],SOL_SOCKET,SO_LINGER,0,0);
+                //setsockopt(condata->Connections[ID],SOL_SOCKET,SO_LINGER,0,0);
                 shutdown((condata->Connections)[ID],2);
                 closesocket((condata->Connections)[ID]);
                 condata->Connections[ID] = '\0';
@@ -604,6 +604,7 @@ int main()
             condata.Connections[condata.ClientCount] = Connect;
             char buffer[buffersize];
             std::string name,pwd,res;
+            setsockopt(condata.Connections[condata.ClientCount],SOL_SOCKET,SO_KEEPALIVE,0,0);
             recv(condata.Connections[condata.ClientCount], buffer, sizeof(buffer), 0);
             std::string buff = std::string(buffer);
             memset(buffer,0,buffersize);

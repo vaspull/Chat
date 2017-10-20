@@ -1,20 +1,14 @@
-#ifndef MYWINDOW_H
-#define MYWINDOW_H
+#ifndef MAINWINDOW_H
+#define MAINWINDOW_H
 
-#include <QTextCodec>
-#include <QCheckBox>
-#include <QCloseEvent>
-#include <QMenu>
 #include <QSystemTrayIcon>
-#include <QAction>
-#include <QDialog>
+#include <QMenu>
+#include <QMessageBox>
+#include <QWidget>
 #include <QLabel>
 #include <QLineEdit>
-#include <QTextEdit>
 #include <QPushButton>
-#include <QHBoxLayout>
-#include <QVBoxLayout>
-#include <QMessageBox>
+#include <QCheckBox>
 #include <QMainWindow>
 #include <ws2tcpip.h>
 #include <iostream>
@@ -25,7 +19,7 @@
 #include <ctype.h>
 #include <conio.h>
 #include "unistd.h"
-
+#include <QDialog>
 #define maxlenghlogin 10
 #define minlenghlogin 6
 #define maxlenghpwd 12
@@ -38,35 +32,45 @@
 const std::string key = "key";
 const std::string key2 = "key2";
 
-class MyWindow : public QDialog
+namespace Ui {
+class MainWindow;
+}
+
+class MainWindow : public QMainWindow
 {
     Q_OBJECT
 
 public:
-    MyWindow(QWidget *parent=0);
-protected:
-    void closeEvent(QCloseEvent * event);
-private:
-    QLabel *lbl;
-    QLabel *lbl2;
-    QLabel *lbl3;
-    QLabel *lbl4;
-    QLineEdit *line;
-    QPushButton *conn;
-    QPushButton *sendmessage;
-    QPushButton *options;
-    QTextEdit *edittext;
-    QTextEdit *edittext2;
-    QSystemTrayIcon * trayIcon;
+    explicit MainWindow(QWidget *parent = 0);
+    ~MainWindow();
+
 private slots:
-    void con();
-    void sen();
+    void on_send_button_clicked();
+
+    void on_connect_button_clicked();
+
+    void on_option_button_clicked();
+
     void read();
-    void opt();
-    void iconActivated(QSystemTrayIcon::ActivationReason reason);
+
 signals:
-    void getinfosignal();
+    void show_option_window();
+private slots:
+    void changeEvent(QEvent*);
+    void trayIconActivated(QSystemTrayIcon::ActivationReason reason);
+    void trayActionExecute();
+    void setTrayIconActions();
+    void showTrayIcon();
+
+private:
+    Ui::MainWindow *ui;
+    QMenu *trayIconMenu;
+    QAction *minimizeAction;
+    QAction *restoreAction;
+    QAction *quitAction;
+    QSystemTrayIcon *trayIcon;
 };
+
 
 class info : public QDialog
 {
@@ -74,27 +78,28 @@ class info : public QDialog
 public:
     info(QWidget *parent=0);
 private:
-    QLabel *lbl;
-    QLabel *lbl2;
-    QLabel *lbl3;
-    QLabel *lbl4;
-    QLineEdit *line;
-    QLineEdit *line2;
-    QLineEdit *line3;
-    QLineEdit *line4;
-    QPushButton *ok;
-    QPushButton *closed;
-    QPushButton *save1;
-    QPushButton *save2;
-    QCheckBox *cb1;
-    QCheckBox *cb2;
+    QLabel *name_label;
+    QLabel *pwd_label;
+    QLabel *srvaddr_label;
+    QLabel *srvport_label;
+    QLineEdit *name_line;
+    QLineEdit *pwd_line;
+    QLineEdit *srvaddr_line;
+    QLineEdit *srvport_line;
+    QPushButton *ok_button;
+    QPushButton *close_button;
+    QPushButton *save_name_pwd_button;
+    QPushButton *save_programm_options;
+    QCheckBox *check_box_tray;
+    QCheckBox *check_box_notice;
 public slots:
-    void getinfo();
-    void okey();
-    void sav1();
-    void sav2();
+    void show_options_window();
+    void on_ok_button_clicked();
+    void on_save_name_pwd_button_clicked();
+    void on_save_programm_options_button_clicked();
 signals:
-    void getok();
+    void push_to_connect_button();
 };
 
-#endif // MYWINDOW_H
+
+#endif // MAINWINDOW_H

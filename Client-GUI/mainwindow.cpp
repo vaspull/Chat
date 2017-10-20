@@ -1,5 +1,5 @@
 #include "mainwindow.h"
-
+#include "ui_mainwindow.h"
 
 struct my_struct
 {
@@ -108,124 +108,72 @@ void decrypt (std::string &res, const std::string key)
     itog.clear();
 }
 
-MyWindow::MyWindow(QWidget *parent) : QDialog(parent)
+MainWindow::MainWindow(QWidget *parent) :
+    QMainWindow(parent),
+    ui(new Ui::MainWindow)
 {
-    QTextCodec::setCodecForLocale(QTextCodec::codecForName("utf8"));
-
-    trayIcon = new QSystemTrayIcon(this);
-    QIcon trayImage(":/images/1.png");
-
-    trayIcon -> setIcon(trayImage);
-    trayIcon->setToolTip("Chat Client GUI" "\n");
-
-    QMenu * menu = new QMenu(this);
-    QAction * viewWindow = new QAction("Развернуть окно", this);
-    QAction * quitAction = new QAction("Выход", this);
-
-
-    connect(viewWindow, SIGNAL(triggered()), this, SLOT(show()));
-    connect(quitAction, SIGNAL(triggered()), this, SLOT(close()));
-
-    menu->addAction(viewWindow);
-    menu->addAction(quitAction);
-
-
-    trayIcon->setContextMenu(menu);
-    trayIcon->show();
-
-
-    connect(trayIcon, SIGNAL(activated(QSystemTrayIcon::ActivationReason)),
-            this, SLOT(iconActivated(QSystemTrayIcon::ActivationReason)));
-
-    lbl = new QLabel("Список пользователей");
-    lbl2 = new QLabel("Твой ник: ");
-    lbl3 = new QLabel();
-    lbl4 = new QLabel();
-    line = new QLineEdit;
-    conn = new QPushButton("Подключить");
-    sendmessage =  new QPushButton("Отправить");
-    options = new QPushButton("Настройки");
-    edittext = new QTextEdit;
-    edittext->setEnabled(false);
-    edittext2 = new QTextEdit;
-    edittext2->setEnabled(false);
-    QHBoxLayout *upper = new QHBoxLayout;
-    upper->addWidget(lbl2);
-    upper->addWidget(lbl3);
-    upper->addWidget(lbl4);
-    QVBoxLayout *left = new QVBoxLayout;
-    left->addLayout(upper);
-    left->addWidget(edittext);
-    left->addWidget(line);
-    QVBoxLayout *right = new QVBoxLayout;
-    right->addWidget(lbl);
-    right->addWidget(edittext2);
-    right->addWidget(options);
-    right->addWidget(conn);
-    right->addWidget(sendmessage);
-    QHBoxLayout *main = new QHBoxLayout;
-    main->addLayout(left);
-    main->addLayout(right);
-    sendmessage->setDefault(true);
-    sendmessage->setAutoDefault(true);
-    sendmessage->setEnabled(false);
-    setLayout(main);
+    ui->setupUi(this);
     setWindowTitle("Чатик");
-    edittext->setReadOnly(true);
-    edittext2->setMaximumWidth(150);
-    connect(conn,SIGNAL(clicked()),this,SLOT(con()));
-    connect(sendmessage,SIGNAL(clicked()),this,SLOT(sen()));
-    connect(options,SIGNAL(clicked(bool)),this,SLOT(opt()));
+    this -> setTrayIconActions();
+    this -> showTrayIcon();
+    this->setWindowFlags(Qt::WindowStaysOnTopHint);
+    trayIcon->setToolTip("Chat Client GUI" "\n");
+}
+
+MainWindow::~MainWindow()
+{
+    delete ui;
 }
 
 info::info(QWidget *parent) : QDialog(parent)
 {
+    this->setWindowFlags(Qt::WindowStaysOnTopHint);
     setWindowTitle("Авторизация");
-    lbl = new QLabel("Логин:");
-    lbl2 = new QLabel("Пароль:");
-    lbl3 = new QLabel("Сервер:");
-    lbl4 = new QLabel("Порт:");
-    line = new QLineEdit;
-    line2 = new QLineEdit;
-    line2->setEchoMode(QLineEdit::Password);
-    line3 = new QLineEdit;
-    line4 = new QLineEdit;
-    cb1 = new QCheckBox("Сворачивать в трей при закрытии");
-    cb2 = new QCheckBox("Отключить уведомления");
-    ok =  new QPushButton("Ok");
-    ok->setDefault(true);
-    ok->setAutoDefault(true);
-    closed = new QPushButton("Выход");
-    save1 = new QPushButton("Записать учетные данные");
-    save2 = new QPushButton("Сохранить настройки");
+    name_label = new QLabel("Логин:");
+    pwd_label = new QLabel("Пароль:");
+    srvaddr_label = new QLabel("Сервер:");
+    srvport_label = new QLabel("Порт:");
+    name_line = new QLineEdit;
+    pwd_line = new QLineEdit;
+    pwd_line->setEchoMode(QLineEdit::Password);
+    srvaddr_line = new QLineEdit;
+    srvport_line = new QLineEdit;
+    check_box_tray = new QCheckBox("Сворачивать в трей");
+    check_box_notice = new QCheckBox("Отключить уведомления");
+    ok_button =  new QPushButton("Ok");
+    ok_button->setDefault(true);
+    ok_button->setAutoDefault(true);
+    close_button = new QPushButton("Выход");
+    save_name_pwd_button = new QPushButton("Записать учетные данные");
+    save_programm_options = new QPushButton("Сохранить настройки");
     QVBoxLayout *left = new QVBoxLayout;
-    left->addWidget(lbl);
-    left->addWidget(lbl2);
-    left->addWidget(lbl3);
-    left->addWidget(lbl4);
-    left->addWidget(save1);
-    left->addWidget(ok);
+    left->addWidget(name_label);
+    left->addWidget(pwd_label);
+    left->addWidget(srvaddr_label);
+    left->addWidget(srvport_label);
+    left->addWidget(save_name_pwd_button);
+    left->addWidget(ok_button);
     QVBoxLayout *right = new QVBoxLayout;
-    right->addWidget(line);
-    right->addWidget(line2);
-    right->addWidget(line3);
-    right->addWidget(line4);
-    right->addWidget(save2);
-    right->addWidget(closed);
+    right->addWidget(name_line);
+    right->addWidget(pwd_line);
+    right->addWidget(srvaddr_line);
+    right->addWidget(srvport_line);
+    right->addWidget(save_programm_options);
+    right->addWidget(close_button);
     QHBoxLayout *main1 = new QHBoxLayout;
     main1->addLayout(left);
     main1->addLayout(right);
     QVBoxLayout *main = new QVBoxLayout;
     main->addLayout(main1);
-    main->addWidget(cb1);
-    main->addWidget(cb2);
+    main->addWidget(check_box_tray);
+    main->addWidget(check_box_notice);
     setLayout(main);
-    connect(closed,SIGNAL(clicked(bool)),this,SLOT(close()));
-    connect(ok,SIGNAL(clicked(bool)),this,SLOT(okey()));
-    connect(save1,SIGNAL(clicked(bool)),this,SLOT(sav1()));
-    connect(save2,SIGNAL(clicked(bool)),this,SLOT(sav2()));
-    line->setText(QString::fromStdString(condata.name));
-    line2->setText(QString::fromStdString(condata.pwd));
+    connect(close_button,SIGNAL(clicked(bool)),this,SLOT(close()));
+    connect(ok_button,SIGNAL(clicked(bool)),this,SLOT(on_ok_button_clicked()));
+    connect(save_name_pwd_button,SIGNAL(clicked(bool)),this,SLOT(on_save_name_pwd_button_clicked()));
+    connect(save_programm_options,SIGNAL(clicked(bool)),this,SLOT(on_save_programm_options_button_clicked()));
+    name_line->setText(QString::fromStdString(condata.name));
+    pwd_line->setText(QString::fromStdString(condata.pwd));
     std::ifstream readname("sec",std::ifstream::in);
     std::string finde,name,pwd,srv,port;
     for(;std::getline(readname,finde);)
@@ -244,16 +192,14 @@ info::info(QWidget *parent) : QDialog(parent)
     decrypt(pwd,key2);
     if(!name.empty())
     {
-        line->setText(QString::fromStdString(name));
+        name_line->setText(QString::fromStdString(name));
     }
     if(!pwd.empty())
     {
-        line2->setText(QString::fromStdString(pwd));
+        pwd_line->setText(QString::fromStdString(pwd));
     }
     finde.clear(),name.clear(),pwd.clear();
-
     readname.open("conf.txt",std::ifstream::in);
-
     for(int i = 0;std::getline(readname,finde);i++)
     {
         if(i==0)
@@ -268,36 +214,34 @@ info::info(QWidget *parent) : QDialog(parent)
         {
             if(finde=="1")
             {
-                cb1->setChecked(true);
+                check_box_tray->setChecked(true);
             }
         }
         else if(i==3)
         {
             if(finde=="1")
             {
-                cb2->setChecked(true);
+                check_box_notice->setChecked(true);
             }
         }
     }
 
     if(!srv.empty())
     {
-        line3->setText(QString::fromStdString(srv));
+        srvaddr_line->setText(QString::fromStdString(srv));
     }
     if(!port.empty())
     {
-        line4->setText(QString::fromStdString(port));
+        srvport_line->setText(QString::fromStdString(port));
     }
     srv.clear(),port.clear(),finde.clear();
-
-
     readname.close();
     finde.clear();
 }
 
-void info::sav1()
+void info::on_save_name_pwd_button_clicked()
 {
-    std::string name = QString(line->text()).toStdString(), pwd = QString(line2->text()).toStdString();
+    std::string name = QString(name_line->text()).toStdString(), pwd = QString(pwd_line->text()).toStdString();
     crypt(name,key2);
     crypt(pwd,key2);
     std::ofstream write("sec",std::ofstream::trunc);
@@ -305,11 +249,11 @@ void info::sav1()
     write.close();
 }
 
-void info::sav2()
+void info::on_save_programm_options_button_clicked()
 {
     std::ofstream write("conf.txt",std::ofstream::trunc);
-    write << QString(line3->text()).toStdString() << '\n' << QString(line4->text()).toStdString() << '\n';
-    if(cb1->isChecked())
+    write << QString(srvaddr_line->text()).toStdString() << '\n' << QString(srvport_line->text()).toStdString() << '\n';
+    if(check_box_tray->isChecked())
     {
         write << 1 << '\n';
     }
@@ -317,7 +261,7 @@ void info::sav2()
     {
         write << 0 << '\n';
     }
-    if(cb2->isChecked())
+    if(check_box_notice->isChecked())
     {
         write << 1 << '\n';
     }
@@ -328,22 +272,19 @@ void info::sav2()
     write.close();
 }
 
-
-void info::okey()
+void info::on_ok_button_clicked()
 {
-    condata.name = QString(line->text()).toStdString();
-    condata.pwd = QString(line2->text()).toStdString();
-    std::string srv = QString(line3->text()).toStdString();
-    condata.prt = QString(line4->text()).toUShort();
+    condata.name = QString(name_line->text()).toStdString();
+    condata.pwd = QString(pwd_line->text()).toStdString();
+    std::string srv = QString(srvaddr_line->text()).toStdString();
+    condata.prt = QString(srvport_line->text()).toUShort();
     for(unsigned int i = 0; i < strlen(srv.c_str());i++)
     {
         condata.srv[i] = srv[i];
     }
-
-
-    if(!condata.name.empty( )&& !condata.pwd.empty() && !line3->text().isEmpty() && !line4->text().isEmpty())
+    if(!condata.name.empty( )&& !condata.pwd.empty() && !srvaddr_line->text().isEmpty() && !srvport_line->text().isEmpty())
     {
-        if(cb1->isChecked())
+        if(check_box_tray->isChecked())
         {
             condata.isCheck = 1;
         }
@@ -351,7 +292,7 @@ void info::okey()
         {
             condata.isCheck = 0;
         }
-        if(cb2->isChecked())
+        if(check_box_notice->isChecked())
         {
             condata.isCheck2 = 1;
         }
@@ -360,19 +301,13 @@ void info::okey()
             condata.isCheck2 = 0;
         }
         info::close();
-        emit getok();
-
+        emit push_to_connect_button();
     }
 }
 
-void info::getinfo()
+void info::show_options_window()
 {
     this->show();
-}
-
-void MyWindow::opt()
-{
-    emit getinfosignal();
 }
 
 void startconnection(int &isConnect)
@@ -393,6 +328,7 @@ void startconnection(int &isConnect)
     }
     else
     {
+        setsockopt(condata.Connect,SOL_SOCKET,SO_KEEPALIVE,0,0);
         printf("Connection on chat server: %s is stable\n\n",condata.srv);
         isConnect = 1;
     }
@@ -425,84 +361,77 @@ void ReadMessageFromServer()
     WSACleanup();
 }
 
-void MyWindow::sen()
-{
-    sendmessage->setEnabled(false);
-    QString str = line->text();
-    line->clear();
-    usleep(2500);
-    std::string buff = QString(str).toStdString();
-    std::string strsend = condata.name+"\n"+condata.pwd+"\n"+buff+"\n";
-    crypt(strsend,key);
-    char sendchar[strlen(strsend.c_str())+2];
-    for(unsigned int i = 0; i < strlen(strsend.c_str())+2;i++) sendchar[i] = '\0';
-    for(unsigned int i = 0; i < strlen(strsend.c_str()); i++) sendchar[i] = strsend[i];
-    send(condata.Connect, sendchar, sizeof(sendchar),0);
-    sendmessage->setEnabled(true);
-}
-
-
-void MyWindow::read()
+void MainWindow::read()
 {
     if(condata.str != condata.str2)
     {
         condata.str2 = condata.str;
         if(condata.str == "access denied, push enter to continue\n")
         {
-            edittext->clear();
-            edittext->setEnabled(false);
-            edittext2->clear();
-            lbl4->setText("Доступ запрещен");
-            lbl4->setStyleSheet("color: rgb(227,38,54)");
-            conn->setText("Подключение");
-            sendmessage->setEnabled(false);
-            options->setEnabled(true);
-            condata.Connect = 0;
-            condata.isConnected = 1;
-            condata.str = "";
-            condata.str2 = "";
+            ui->send_button->setEnabled(false);
+            ui->userlist_field->setEnabled(false);
+            ui->userlist_field->clear();
+            ui->read_text_field->setText("access denied");
+            ui->read_text_field->setEnabled(false);
+            ui->read_text_field->clear();
+            ui->option_button->setEnabled(true);
+            ui->your_nick_label->setText("");
+            ui->connect_status_label->setText("Доступ запрещен");
+            ui->connect_status_label->setStyleSheet("color: rgb(227,38,54)");
+            ui->connect_button->setText("Подключение");
+            ui->send_message_line->setEnabled(false);
             send(condata.Connect,"gubabo", 10, 0);
             shutdown(condata.Connect,2);
             closesocket(condata.Connect);
             WSACleanup();
+            condata.Connect = 0;
+            condata.isConnected = 1;
+            condata.str = "";
+            condata.str2 = "";
         }
         else if(condata.str == "server offline\n")
         {
-            edittext->clear();
-            edittext->setEnabled(false);
-            edittext2->clear();
-            lbl4->setText("Сервер офлайн");
-            lbl4->setStyleSheet("color: rgb(227,38,54)");
-            conn->setText("Подключение");
-            sendmessage->setEnabled(false);
-            options->setEnabled(true);
-            condata.Connect = 0;
-            condata.isConnected = 1;
-            condata.str = "";
-            condata.str2 = "";
+            ui->send_button->setEnabled(false);
+            ui->userlist_field->setEnabled(false);
+            ui->userlist_field->clear();
+            ui->read_text_field->setEnabled(false);
+            ui->read_text_field->clear();
+            ui->option_button->setEnabled(true);
+            ui->your_nick_label->setText("");
+            ui->connect_status_label->setText("Сервер офлайн");
+            ui->connect_status_label->setStyleSheet("color: rgb(227,38,54)");
+            ui->connect_button->setText("Подключение");
+            ui->send_message_line->setEnabled(false);
             send(condata.Connect,"gubabo", 10, 0);
             shutdown(condata.Connect,2);
             closesocket(condata.Connect);
             WSACleanup();
+            condata.Connect = 0;
+            condata.isConnected = 1;
+            condata.str = "";
+            condata.str2 = "";
         }
         else if(condata.str == "")
         {
-            edittext->clear();
-            edittext->setEnabled(false);
-            edittext2->clear();
-            lbl4->setText("Разрыв соединения");
-            lbl4->setStyleSheet("color: rgb(227,38,54)");
-            conn->setText("Подключение");
-            sendmessage->setEnabled(false);
-            options->setEnabled(true);
-            condata.Connect = 0;
-            condata.isConnected = 1;
-            condata.str = "";
-            condata.str2 = "";
+            ui->send_button->setEnabled(false);
+            ui->read_text_field->setEnabled(false);
+            ui->read_text_field->clear();
+            ui->option_button->setEnabled(true);
+            ui->your_nick_label->setText("");
+            ui->connect_status_label->setText("Разрыв соединения");
+            ui->connect_status_label->setStyleSheet("color: rgb(227,38,54)");
+            ui->connect_button->setText("Подключение");
+            ui->send_message_line->setEnabled(false);
+            ui->userlist_field->setEnabled(false);
+            ui->userlist_field->clear();
             send(condata.Connect,"gubabo", 10, 0);
             shutdown(condata.Connect,2);
             closesocket(condata.Connect);
             WSACleanup();
+            condata.Connect = 0;
+            condata.isConnected = 1;
+            condata.str = "";
+            condata.str2 = "";
         }
         else if(condata.str[0] == 91)
         {
@@ -519,13 +448,29 @@ void MyWindow::read()
                                           2000);
                 }
             }
-            edittext->moveCursor(QTextCursor::End);
-            edittext->textCursor().insertText(QString::fromStdString(condata.str));
+            ui->read_text_field->moveCursor(QTextCursor::End);
+            ui->read_text_field->textCursor().insertText(QString::fromStdString(condata.str));
+            ui->read_text_field->moveCursor(QTextCursor::End);
         }
         else
         {
-            edittext2->clear();
-            edittext2->textCursor().insertText(QString::fromStdString(condata.str));
+            std::string res, buf = condata.str;
+
+            uint count = 0, count2 = 0;
+            ui->userlist_field->clear();
+            for(uint i = 0; i < strlen(buf.c_str()) ;i++)
+            {
+                if(buf[i] == '\n')
+                {
+                    for(; count < i ; count++)
+                    {
+                        res += buf[count];
+                    }
+                    count++;
+                    ui->userlist_field->insertItem(count2,QString::fromStdString(res));
+                    res.clear();
+                }
+            }
         }
     }
 
@@ -536,7 +481,7 @@ void MyWindow::read()
     }
 }
 
-void MyWindow::con()
+void MainWindow::on_connect_button_clicked()
 {
     int isConnect;
     if(condata.isShow)
@@ -564,21 +509,23 @@ void MyWindow::con()
             condata.str = buff;
             if(buff=="access denied, push enter to continue\n")
             {
-                edittext2->clear();
                 buff.clear();
-                edittext->setText("access denied");
-                lbl3->setText("");
-                lbl4->setText("Доступ запрещен");
-                lbl4->setStyleSheet("color: rgb(227,38,54)");
+                ui->userlist_field->clear();
+                ui->userlist_field->setEnabled(false);
+                ui->read_text_field->setText("access denied");
+                ui->read_text_field->setEnabled(false);
+                ui->read_text_field->clear();
+                ui->option_button->setEnabled(true);
+                ui->your_nick_label->setText("");
+                ui->connect_status_label->setText("Доступ запрещен");
+                ui->connect_status_label->setStyleSheet("color: rgb(227,38,54)");
+                ui->connect_button->setText("Подключение");
+                ui->send_message_line->setEnabled(false);
+                ui->send_button->setEnabled(false);
                 send(condata.Connect,"gubabo", 10, 0);
                 shutdown(condata.Connect,2);
                 closesocket(condata.Connect);
                 WSACleanup();
-                conn->setText("Подключение");
-                sendmessage->setEnabled(false);
-                edittext->setEnabled(false);
-                edittext->clear();
-                options->setEnabled(true);
                 condata.Connect = 0;
                 condata.isConnected = 1;
                 condata.str = "";
@@ -587,104 +534,168 @@ void MyWindow::con()
             else
             {
                 trayIcon -> setIcon(QIcon(":/images/2.png"));
-                edittext->textCursor().insertText(QString::fromStdString(condata.str));
+                ui->read_text_field->textCursor().insertText(QString::fromStdString(condata.str));
+                ui->read_text_field->setEnabled(true);
+                ui->send_message_line->setEnabled(true);
                 condata.str2 = condata.str;
                 CreateThread(0,0,(LPTHREAD_START_ROUTINE)ReadMessageFromServer,0,0,0);
                 memset(strsendchar, 0, sizeof(strsendchar));
-                conn->setText("Отключение");
-                edittext->setEnabled(true);
-                sendmessage->setEnabled(true);
-                options->setEnabled(false);
-                lbl3->setText(QString::fromStdString(condata.name));
-                lbl4->setText("Подключено");
-                lbl4->setStyleSheet("color: rgb(141,182,0)");
-                read();
+                ui->connect_button->setText("Отключение");
+                ui->send_button->setEnabled(true);
+                ui->option_button->setEnabled(false);
+                ui->your_nick_label->setText(QString::fromStdString(condata.name));
+                ui->connect_status_label->setText("Подключено");
+                ui->userlist_field->setEnabled(true);
+                ui->connect_status_label->setStyleSheet("color: rgb(141,182,0)");
+                MainWindow::read();
             }
         }
         else
         {
-            edittext2->clear();
-            lbl4->setText("Ошибка подключения");
-            lbl4->setStyleSheet("color: rgb(227,38,54)");
+            ui->send_button->setEnabled(false);
+            ui->userlist_field->clear();
+            ui->connect_status_label->setText("Ошибка подключения");
+            ui->connect_status_label->setStyleSheet("color: rgb(227,38,54)");
+            ui->connect_button->setText("Подключение");
+            ui->send_message_line->setEnabled(false);
+            ui->read_text_field->setEnabled(false);
+            ui->read_text_field->clear();
+            ui->userlist_field->setEnabled(false);
+            ui->option_button->setEnabled(true);
             send(condata.Connect,"gubabo", 10, 0);
             shutdown(condata.Connect,2);
             closesocket(condata.Connect);
             WSACleanup();
-            conn->setText("Подключение");
             condata.isConnected = 1;
-            sendmessage->setEnabled(false);
-            edittext->setEnabled(false);
-            edittext->clear();
-            options->setEnabled(true);
         }
     }
     else
     {
-        edittext2->clear();
+        ui->send_button->setEnabled(false);
         trayIcon -> setIcon(QIcon(":/images/1.png"));
-        condata.isConnected = 1;
+        ui->userlist_field->clear();
+        ui->connect_status_label->setText("Отключено");
+        ui->connect_status_label->setStyleSheet("color: rgb(227,38,54)");
+        ui->connect_button->setText("Подключение");
+        ui->send_message_line->setEnabled(false);
+        ui->read_text_field->clear();
+        ui->read_text_field->setEnabled(false);
+        ui->option_button->setEnabled(true);
+        ui->userlist_field->setEnabled(false);
         send(condata.Connect,"gubabo", 10, 0);
         shutdown(condata.Connect,2);
         closesocket(condata.Connect);
         WSACleanup();
+        condata.isConnected = 1;
         condata.str="";
         condata.str2="";
-        lbl4->setText("Отключено");
-        lbl4->setStyleSheet("color: rgb(227,38,54)");
-        conn->setText("Подключение");
-        sendmessage->setEnabled(false);
-        edittext->setEnabled(false);
-        edittext->clear();
-        options->setEnabled(true);
     }
 }
 
-
-void MyWindow::closeEvent(QCloseEvent * event)
+void MainWindow::on_send_button_clicked()
 {
-    if(this->isVisible() && condata.isCheck)
-    {
-        event->ignore();
-        this->hide();
-        if(!condata.isCheck2)
-        {
-            QSystemTrayIcon::MessageIcon icon = QSystemTrayIcon::MessageIcon(QSystemTrayIcon::Information);
-            trayIcon->showMessage("Chat Client GUI",
-                                  "Приложение свернуто в трей. Для того чтобы, "
-                                  "развернуть окно приложения, щелкните по иконке приложения в трее",
-                                  icon,
-                                  2000);
-        }
-    }
+    ui->send_button->setEnabled(false);
+    QString str = ui->send_message_line->text();
+    ui->send_message_line->clear();
+    usleep(2500);
+    std::string buff = QString(str).toStdString();
+    std::string strsend = condata.name+"\n"+condata.pwd+"\n"+buff+"\n";
+    crypt(strsend,key);
+    char sendchar[strlen(strsend.c_str())+2];
+    for(unsigned int i = 0; i < strlen(strsend.c_str())+2;i++) sendchar[i] = '\0';
+    for(unsigned int i = 0; i < strlen(strsend.c_str()); i++) sendchar[i] = strsend[i];
+    send(condata.Connect, sendchar, sizeof(sendchar),0);
+    ui->send_button->setEnabled(true);
 }
 
-void MyWindow::iconActivated(QSystemTrayIcon::ActivationReason reason)
+void MainWindow::on_option_button_clicked()
+{
+    emit show_option_window();
+}
+
+void MainWindow::showTrayIcon()
+{
+    trayIcon = new QSystemTrayIcon(this);
+    QIcon trayImage(":/images/1.png");
+    trayIcon -> setIcon(trayImage);
+    trayIcon -> setContextMenu(trayIconMenu);
+    trayIcon -> show();
+    connect(trayIcon, SIGNAL(activated(QSystemTrayIcon::ActivationReason)), this, SLOT(trayIconActivated(QSystemTrayIcon::ActivationReason)));
+}
+
+void MainWindow::trayActionExecute()
+{
+    if(condata.isConnected)
+    {
+        QIcon trayImage(":/images/1.png");
+        trayIcon -> setIcon(trayImage);
+    }
+    else
+    {
+        QIcon trayImage(":/images/2.png");
+        trayIcon -> setIcon(trayImage);
+    }
+
+    this->showNormal();
+    trayIcon->setToolTip("Chat Client GUI" "\n");
+}
+
+void MainWindow::trayIconActivated(QSystemTrayIcon::ActivationReason reason)
 {
     switch (reason)
     {
-    case QSystemTrayIcon::Trigger:
-        if(condata.isCheck)
-        {
-            if(!this->isVisible())
-            {
-                trayIcon->setToolTip("Chat Client GUI" "\n");
-                if(!condata.isConnected)
-                {
-                    trayIcon -> setIcon(QIcon(":/images/2.png"));
-                }
-                else
-                {
-                    trayIcon -> setIcon(QIcon(":/images/1.png"));
-                }
-                this->show();
-            }
-            else
-            {
-                this->hide();
-            }
-        }
-        break;
-    default:
-        break;
+        case QSystemTrayIcon::DoubleClick:
+
+            this -> trayActionExecute();
+            break;
+          default:
+            break;
     }
 }
+
+void MainWindow::setTrayIconActions()
+{
+    minimizeAction = new QAction("Свернуть", this);
+    restoreAction = new QAction("Восстановить", this);
+    quitAction = new QAction("Выход", this);
+    connect (minimizeAction, SIGNAL(triggered()), this, SLOT(hide()));
+    connect (restoreAction, SIGNAL(triggered()), this, SLOT(trayActionExecute()));
+    connect (quitAction, SIGNAL(triggered()), qApp, SLOT(quit()));
+    trayIconMenu = new QMenu(this);
+    trayIconMenu -> addAction (minimizeAction);
+    trayIconMenu -> addAction (restoreAction);
+    trayIconMenu -> addAction (quitAction);
+}
+
+void MainWindow::changeEvent(QEvent *event)
+{
+    QMainWindow::changeEvent(event);
+    if (event -> type() == QEvent::WindowStateChange)
+    {
+        if (isMinimized())
+        {
+            if(condata.isCheck&&!condata.isCheck2)
+            {
+                QSystemTrayIcon::MessageIcon icon = QSystemTrayIcon::MessageIcon(QSystemTrayIcon::Information);
+                trayIcon->showMessage("Chat Client GUI","Приложение свернуто в трей.",icon,2000);
+                this -> hide();
+            }
+            else if(condata.isCheck&&condata.isCheck2)
+            {
+                this -> hide();
+            }
+        }
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
