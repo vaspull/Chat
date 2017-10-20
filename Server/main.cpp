@@ -475,7 +475,7 @@ void SendMessageToClient(struct my_struct *condata)
                 {
                     //if (i!=ID)
                     //{
-                        send((condata->Connections)[i], reschar, sizeof(reschar), 0);
+                    send((condata->Connections)[i], reschar, sizeof(reschar), 0);
                     //}
                 }
                 memset(reschar,0,sizeof(reschar));
@@ -542,6 +542,24 @@ void SendMessageToClient(struct my_struct *condata)
     }
 }
 
+void forkeepalive(struct my_struct *condata)
+{
+    for(;;Sleep(600000))
+    {
+        if(!condata->ClientCount)
+        {
+            std::string result;
+            condata->m.result(result);
+            crypt(result,key);
+            Sleep(200);
+            char resultchar[strlen(result.c_str())];
+            for(unsigned int i = 0; i < strlen(result.c_str());i++) resultchar[i] = result[i];
+            for (int i = 0; i <= condata->ClientCount; i++) send(condata->Connections[i],resultchar,sizeof(resultchar),0);
+            memset(resultchar,0,sizeof(resultchar));
+        }
+    }
+}
+
 
 int main()
 {
@@ -594,6 +612,7 @@ int main()
     std::string m_connect = "online\n\n";
     crypt(m_connect,key);
     CreateThread(0,0,(LPTHREAD_START_ROUTINE)reguser,0,0,0);
+    CreateThread(0,0,(LPTHREAD_START_ROUTINE)forkeepalive,(LPVOID)&condata,0,0);
     for(;;Sleep(75)) {
         if((Connect = accept(Listen,0,0)) != INVALID_SOCKET) {
             logs.open("logs.txt", std::ios_base::app);
