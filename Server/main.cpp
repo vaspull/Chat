@@ -544,10 +544,8 @@ void SendMessageToClient(struct my_struct *condata)
 
 void forkeepalive(struct my_struct *condata)
 {
-    for(;;Sleep(600000))
+    for(;;Sleep(300000))
     {
-        if(!condata->ClientCount)
-        {
             std::string result;
             condata->m.result(result);
             crypt(result,key);
@@ -556,7 +554,6 @@ void forkeepalive(struct my_struct *condata)
             for(unsigned int i = 0; i < strlen(result.c_str());i++) resultchar[i] = result[i];
             for (int i = 0; i <= condata->ClientCount; i++) send(condata->Connections[i],resultchar,sizeof(resultchar),0);
             memset(resultchar,0,sizeof(resultchar));
-        }
     }
 }
 
