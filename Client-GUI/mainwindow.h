@@ -55,12 +55,15 @@ private slots:
 
 signals:
     void show_option_window();
+    void create_privat_chat(struct my_struct &condata);
+
 private slots:
     void changeEvent(QEvent*);
     void trayIconActivated(QSystemTrayIcon::ActivationReason reason);
     void trayActionExecute();
     void setTrayIconActions();
     void showTrayIcon();
+    void on_userlist_field_doubleClicked(const QModelIndex &index);
 
 private:
     Ui::MainWindow *ui;

@@ -142,14 +142,20 @@
     <property name="title">
      <string>Меню</string>
     </property>
-    <addaction name="action"/>
+    <widget class="QMenu" name="menu_2">
+     <property name="title">
+      <string>О программе</string>
+     </property>
+     <addaction name="actionasd"/>
+    </widget>
+    <addaction name="menu_2"/>
    </widget>
    <addaction name="menu"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
-  <action name="action">
+  <action name="actionasd">
    <property name="text">
-    <string>О программе</string>
+    <string>asd</string>
    </property>
   </action>
  </widget>

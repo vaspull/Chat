@@ -32,7 +32,7 @@ QT_BEGIN_NAMESPACE
 class Ui_MainWindow
 {
 public:
-    QAction *action;
+    QAction *actionasd;
     QWidget *centralWidget;
     QGridLayout *gridLayout_2;
     QGridLayout *gridLayout;
@@ -49,6 +49,7 @@ public:
     QLabel *connect_status_label;
     QMenuBar *menuBar;
     QMenu *menu;
+    QMenu *menu_2;
     QStatusBar *statusBar;
 
     void setupUi(QMainWindow *MainWindow)
@@ -59,8 +60,8 @@ public:
         QIcon icon;
         icon.addFile(QStringLiteral("Iconka-Meow-Cat-tied.ico"), QSize(), QIcon::Normal, QIcon::Off);
         MainWindow->setWindowIcon(icon);
-        action = new QAction(MainWindow);
-        action->setObjectName(QStringLiteral("action"));
+        actionasd = new QAction(MainWindow);
+        actionasd->setObjectName(QStringLiteral("actionasd"));
         centralWidget = new QWidget(MainWindow);
         centralWidget->setObjectName(QStringLiteral("centralWidget"));
         gridLayout_2 = new QGridLayout(centralWidget);
@@ -144,13 +145,16 @@ public:
         menuBar->setGeometry(QRect(0, 0, 682, 21));
         menu = new QMenu(menuBar);
         menu->setObjectName(QStringLiteral("menu"));
+        menu_2 = new QMenu(menu);
+        menu_2->setObjectName(QStringLiteral("menu_2"));
         MainWindow->setMenuBar(menuBar);
         statusBar = new QStatusBar(MainWindow);
         statusBar->setObjectName(QStringLiteral("statusBar"));
         MainWindow->setStatusBar(statusBar);
 
         menuBar->addAction(menu->menuAction());
-        menu->addAction(action);
+        menu->addAction(menu_2->menuAction());
+        menu_2->addAction(actionasd);
 
         retranslateUi(MainWindow);
 
@@ -163,7 +167,7 @@ public:
     void retranslateUi(QMainWindow *MainWindow)
     {
         MainWindow->setWindowTitle(QApplication::translate("MainWindow", "MainWindow", Q_NULLPTR));
-        action->setText(QApplication::translate("MainWindow", "\320\236 \320\277\321\200\320\276\320\263\321\200\320\260\320\274\320\274\320\265", Q_NULLPTR));
+        actionasd->setText(QApplication::translate("MainWindow", "asd", Q_NULLPTR));
         connect_button->setText(QApplication::translate("MainWindow", "\320\237\320\276\320\264\320\272\320\273\321\216\321\207\320\265\320\275\320\270\320\265", Q_NULLPTR));
         option_button->setText(QApplication::translate("MainWindow", "\320\235\320\260\321\201\321\202\321\200\320\276\320\271\320\272\320\270", Q_NULLPTR));
         userlist_label->setText(QApplication::translate("MainWindow", "\320\241\320\277\320\270\321\201\320\276\320\272 \320\277\320\276\320\273\321\214\320\267\320\276\320\262\320\260\321\202\320\265\320\273\320\265\320\271", Q_NULLPTR));
@@ -175,6 +179,7 @@ public:
         your_nick_label->setText(QString());
         connect_status_label->setText(QApplication::translate("MainWindow", "\320\237\320\276\320\264\320\272\320\273\321\216\321\207\320\265\320\275\320\276", Q_NULLPTR));
         menu->setTitle(QApplication::translate("MainWindow", "\320\234\320\265\320\275\321\216", Q_NULLPTR));
+        menu_2->setTitle(QApplication::translate("MainWindow", "\320\236 \320\277\321\200\320\276\320\263\321\200\320\260\320\274\320\274\320\265", Q_NULLPTR));
     } // retranslateUi
 
 };
