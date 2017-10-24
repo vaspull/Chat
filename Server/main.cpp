@@ -22,6 +22,7 @@ private:
     struct Elem                         //Describe the structure of a linked list
     {
         std::string data;                    //The information includes a list item
+        int ID;
         Elem* next;                     //Pointer to the next element
         Elem* prev;                     //A pointer to the previous element
     };
@@ -36,10 +37,11 @@ public:
         last = NULL;
     }
 
-    void add(std::string d)                   //A method of adding a new item to the list
+    void add(std::string d,int ID)                   //A method of adding a new item to the list
     {
         Elem *newelem = new Elem;        //Memory allocation for the new element
         newelem -> data = d;             //We set the value of data to the new structure element
+        newelem -> ID = ID;
         newelem -> next = NULL;          //Assigning a pointer to the next element to NULL
         counter++;                       //Increase the value of the counter elements
         if ( first == NULL )             //Checking if the list is empty - a new element of the structure will be the first and last at the same time, the previous will be NULL
@@ -110,6 +112,15 @@ public:
             std::cout << info->data << std::endl;
             info = info -> next;
         }
+    }
+    void finde(std::string name, int &ID)
+    {
+        Elem *info = first;
+        while(info&&name!=info->data)
+        {
+            info = info -> next;
+        }
+        ID=info->ID;
     }
 
     void sss(std::string name,int &i)
@@ -368,6 +379,232 @@ void decrypt (std::string &res, const std::string key)
     itog.clear();
 }
 
+int valid(std::string name, std::string pwd)
+{
+    std::string summHash = sha512(name+pwd);
+    std::string string;
+    bool isHave = 0;
+    std::ifstream read("pwd.txt", std::ifstream::in);
+    while(std::getline(read, string))
+    {
+        if(string == summHash && isHave == 0)
+        {
+            isHave = 1;
+        }
+    }
+    read.close();
+    return isHave;
+}
+
+void parcer2(std:: string buffer, std::string &name, std::string &pwd, std::string &res, std::string &name_privat)
+{
+    if(!buffer.empty())
+    {
+        int isname = 1, ispwd = 1, istext = 1, isprivat = 1, isprivat_name = 1;
+        unsigned int cur = 0;
+        std::string privat,text;
+        for(unsigned int i = 0; i < strlen(buffer.c_str());)
+        {
+            if(buffer[i]=='\n' && isname)
+            {
+                for(unsigned int a = 0; a < i; a++)
+                {
+                    name += buffer[cur++];
+                }
+                isname = 0, cur++, i++;
+            }
+            else if(buffer[i]=='\n' && ispwd)
+            {
+                for(unsigned int a = 0; a < (i-strlen(name.c_str())-1); a++)
+                {
+                    pwd += buffer[cur++];
+                }
+                ispwd = 0, cur++,i++;
+            }
+            else if(buffer[i]=='\n' && isprivat)
+            {
+                for(unsigned int a = 0; a < (i-(strlen(name.c_str())+strlen(pwd.c_str()))-2); a++)
+                {
+                    privat += buffer[cur++];
+                }
+                isprivat = 0, cur++,i++;
+                if(privat == "!privat")
+                {
+                    for(;istext;)
+                    {
+                        if(buffer[i]=='\n' && isprivat_name)
+                        {
+                            for(unsigned int a = 0; a < (i-(strlen(name.c_str())+strlen(pwd.c_str())+strlen(privat.c_str())+3)); a++)
+                            {
+                                name_privat += buffer[cur++];
+                            }
+                            isprivat_name=0,cur++,i++;
+                        }
+                        else if(buffer[i]=='\n' && istext)
+                        {
+                            for(unsigned int a = 0; a < (i-(strlen(name.c_str())+strlen(pwd.c_str())+strlen(privat.c_str())+strlen(name_privat.c_str()))-4); a++)
+                            {
+                                text += buffer[cur++];
+                            }
+                            istext = 0, i++;
+                        }
+                        else
+                        {
+                            i++;
+                        }
+                    }
+                }
+            }
+            else if(buffer[i]=='\n' && istext)
+            {
+                for(unsigned int a = 0; a < (i-(strlen(name.c_str())+strlen(pwd.c_str()))-3); a++)
+                {
+                    text += buffer[cur++];
+                }
+                istext = 0, i++;
+            }
+            else
+            {
+                i++;
+            }
+        }
+        if(!isname && !ispwd && !istext)
+        {
+            res = name + ": " + text + '\n';
+        }
+        else
+        {
+            res.clear();
+            name.clear();
+            pwd.clear();
+        }
+    }
+}
+
+void SendMessageToClient2(struct my_struct *condata)
+{
+    std::string name2 = condata->name;
+    int ID = condata->ID;
+    std::string accden = "access denied, push enter to continue\n";
+    crypt(accden,key);
+    char accdenchar[strlen(accden.c_str())];
+    for(unsigned int i = 0; i < strlen(accden.c_str());i++) accdenchar[i] = accden[i];
+    char time[40] = "";
+    for ( ; ; Sleep(sleeptime))
+    {
+        std::ofstream logs("logs.txt", std::ios_base::app);
+        logs.close();
+        char buffer[buffersize] ="";
+        if (recv((condata->Connections)[ID], buffer, sizeof(buffer), 0))
+        {
+            std::string name,pwd,res, name_privat, buff = std::string(buffer);
+            memset(buffer,0,sizeof(buffer));
+            decrypt(buff,key);
+            parcer2(buff, name, pwd, res, name_privat);
+            buff.clear();
+            if(!res.empty() && valid(name,pwd))
+            {
+                if(name_privat.empty())
+                {
+                    logs.open("logs.txt", std::ios_base::app);
+                    settime(time);
+                    logs << "[" << time << "] client id " << ID << ":" << res;
+                    logs.close();
+                    std::string itog = "["+std::string(time)+"] "+ res;
+                    crypt(itog,key);
+                    char reschar[strlen(itog.c_str())];
+                    for(unsigned int i = 0; i < strlen(itog.c_str());i++) reschar[i] = itog[i];
+                    itog.clear();
+                    res.clear();
+                    name.clear();
+                    pwd.clear();
+                    for (int i = 0; i < condata->ClientCount; i++)
+                    {
+                        send((condata->Connections)[i], reschar, sizeof(reschar), 0);
+                    }
+                    memset(reschar,0,sizeof(reschar));
+                }
+                else
+                {
+                    settime(time);
+                    int ident;
+                    condata->m.finde(name_privat,ident);
+                    std::string temp = "!\n" + name_privat + "\n";
+                    std::string itog = temp + "["+std::string(time)+"] " + res;
+                    crypt(itog,key);
+                    char reschar[strlen(itog.c_str())];
+                    for(unsigned int i = 0; i < strlen(itog.c_str());i++) reschar[i] = itog[i];
+                    itog.clear();
+                    res.clear();
+                    name.clear();
+                    pwd.clear();
+                    send((condata->Connections)[ident], reschar, sizeof(reschar), 0);
+                    send((condata->Connections)[ID], reschar, sizeof(reschar), 0);
+                    memset(reschar,0,sizeof(reschar));
+                }
+            }
+            else if(connect(condata->Connections[ID],0,0))
+            {
+
+                logs.open("logs.txt", std::ios_base::app);
+                settime(time);
+
+                std::string skobka = "[";
+                std::string diss = skobka + time + "] "  + name2 + " <- DISCONNECT!\n";
+                crypt(diss,key);
+                char disschar[strlen(diss.c_str())];
+                for(unsigned int i = 0; i < strlen(diss.c_str());i++) disschar[i] = diss[i];
+                for (int i = 0; i < condata->ClientCount; i++)
+                    if (i!=ID)
+                    {
+                        send(condata->Connections[i],disschar,sizeof(disschar),0);
+                    }
+                memset(disschar,0,sizeof(disschar));
+                diss.clear();
+                logs << "[" << time << "] client id " << ID << " name " << name2 <<" <- DISCONNECT!\n";
+                logs.close();
+                Sleep(200);
+                int cou;
+                condata->m.sss(name2,cou);
+                condata->m.del(cou);
+                std::string result;
+                condata->m.result(result);
+                crypt(result,key);
+                char resultchar[strlen(result.c_str())];
+                for(unsigned int i = 0; i < strlen(result.c_str());i++) resultchar[i] = result[i];
+                for (int i = 0; i < condata->ClientCount; i++) send(condata->Connections[i],resultchar,sizeof(resultchar),0);
+                memset(resultchar,0,sizeof(resultchar));
+                shutdown((condata->Connections)[ID],2);
+                closesocket((condata->Connections)[ID]);
+                condata->Connections[ID] = '\0';
+                break;
+            }
+
+            else if(!valid(name,pwd))
+            {
+                logs.open("logs.txt", std::ios_base::app);
+                settime(time);
+                logs << "[" << time <<"] client id " << ID << " : authorization attempt with name: "<< "|" << name << "|" << " and pwd:"<< "|" << pwd << "|" <<" <-- NO VALID!!!\n";
+                logs.close();
+                send((condata->Connections)[ID],accdenchar, sizeof(accdenchar), 0);
+                shutdown((condata->Connections)[ID],2);
+                closesocket((condata->Connections)[ID]);
+                condata->Connections[ID] = '\0';
+                break;
+            }
+
+        }
+        else
+        {
+            shutdown(condata->Connections[ID],2);
+            closesocket(condata->Connections[ID]);
+            condata->Connections[ID] = '\0';
+            break;
+        }
+    }
+}
+
+
 void parcer(std:: string buffer, std::string &name, std::string &pwd, std::string &res)
 {
     if(!buffer.empty())
@@ -417,23 +654,6 @@ void parcer(std:: string buffer, std::string &name, std::string &pwd, std::strin
             pwd.clear();
         }
     }
-}
-
-int valid(std::string name, std::string pwd)
-{
-    std::string summHash = sha512(name+pwd);
-    std::string string;
-    bool isHave = 0;
-    std::ifstream read("pwd.txt", std::ifstream::in);
-    while(std::getline(read, string))
-    {
-        if(string == summHash && isHave == 0)
-        {
-            isHave = 1;
-        }
-    }
-    read.close();
-    return isHave;
 }
 
 void SendMessageToClient(struct my_struct *condata)
@@ -640,7 +860,7 @@ int main()
             }
             else {
                 condata.name = name;
-                condata.m.add(name);
+                condata.m.add(name,condata.ClientCount);
                 logs.open("logs.txt", std::ios_base::app);
                 settime(time);
                 logs << "[" << time << "] client id " << condata.ClientCount << " : authorization attempt with name: "<< "|" << name << "|" << " and pwd:"<< "|" << pwd << "|" <<" <---SUCCESS!!!\n";
@@ -669,7 +889,7 @@ int main()
                 Sleep(20);
                 condata.ID = condata.ClientCount;
                 condata.ClientCount++;
-                CreateThread(0,0,(LPTHREAD_START_ROUTINE)SendMessageToClient,(LPVOID)&condata,0,0);
+                CreateThread(0,0,(LPTHREAD_START_ROUTINE)SendMessageToClient2,(LPVOID)&condata,0,0);
             }
             buff.clear();
             name.clear();

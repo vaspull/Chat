@@ -10,6 +10,9 @@
 #include <time.h>
 #include <ctype.h>
 #include <conio.h>
+#include <unistd.h>
+
+const std::string key = "key";
 
 namespace Ui {
 class Dialog;
@@ -26,6 +29,8 @@ private:
 private slots:
     void create_privat_chat(struct my_struct &condata);
     void show_chat(struct my_struct &condata);
+    void on_senmessage_privat_chat_button_clicked();
+    void read();
 };
 
 #endif // DIALOG_H
