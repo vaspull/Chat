@@ -338,7 +338,7 @@ void startconnection(int &isConnect)
 
 void ReadMessageFromServer()
 {
-    for ( ;!condata.isConnected;)
+    for ( ;!condata.isConnected;usleep(1000))
     {
         char buffer[buffersize] = "";
         if (recv(condata.Connect, buffer, sizeof(buffer), 0) != SOCKET_ERROR)
@@ -361,6 +361,21 @@ void ReadMessageFromServer()
     shutdown(condata.Connect,2);
     closesocket(condata.Connect);
     WSACleanup();
+}
+
+void parcer2(std::string str, std::string &privat_name)
+{
+    for(uint i = 0; str[i] !=91;i++)
+    {
+        if(str[i]=='\n')
+        {
+            i +=1;
+            for(;str[i]!='\n';i++)
+            {
+                privat_name += str[i];
+            }
+        }
+    }
 }
 
 void MainWindow::read()
@@ -454,10 +469,6 @@ void MainWindow::read()
             ui->read_text_field->textCursor().insertText(QString::fromStdString(condata.str));
             ui->read_text_field->moveCursor(QTextCursor::End);
         }
-//        else if(condata.str[0] == 33)
-//        {
-
-//        }
         else
         {
             std::string res, buf = condata.str;
@@ -477,6 +488,17 @@ void MainWindow::read()
                     res.clear();
                 }
             }
+        }
+    }
+    else if(condata.str != condata.str2 && condata.str[0] == 33)
+    {
+        std::string prvt_name;
+        parcer2(condata.str,prvt_name);
+        condata.str2 = condata.str;
+        if (prvt_name == condata.name)
+        {
+            condata.str2 = condata.str;
+            emit create_privat_chat(condata);
         }
     }
 
@@ -698,7 +720,7 @@ void MainWindow::on_userlist_field_doubleClicked(const QModelIndex &index)
 {
     QString str = ui->userlist_field->item(index.row())->text();
     condata.name_privat = QString(str).toStdString();
-    emit create_privat_chat(condata);
+    emit create_privat_chat2(condata);
 }
 
 

@@ -14,5 +14,6 @@ int main(int argc, char *argv[])
     QObject::connect(w,SIGNAL(show_option_window()),inf,SLOT(show_options_window()));
     QObject::connect(inf,SIGNAL(push_to_connect_button()),w,SLOT(on_connect_button_clicked()));
     QObject::connect(w,SIGNAL(create_privat_chat(struct my_struct&)),d,SLOT(create_privat_chat(struct my_struct&)));
+    QObject::connect(w,SIGNAL(create_privat_chat2(struct my_struct&)),d,SLOT(create_privat_chat2(struct my_struct&)));
     return a.exec();
 }

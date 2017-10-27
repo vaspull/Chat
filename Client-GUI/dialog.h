@@ -11,8 +11,9 @@
 #include <ctype.h>
 #include <conio.h>
 #include <unistd.h>
+#include <QCloseEvent>
 
-const std::string key = "key";
+const std::string key3 = "key";
 
 namespace Ui {
 class Dialog;
@@ -24,11 +25,15 @@ class Dialog : public QDialog
 public:
     explicit Dialog(QWidget *parent = 0);
     ~Dialog();
+protected:
+    void closeEvent(QCloseEvent * event);
 private:
     Ui::Dialog *ui;
 private slots:
     void create_privat_chat(struct my_struct &condata);
-    void show_chat(struct my_struct &condata);
+    void create_privat_chat2(struct my_struct &condata);
+    void show_chat(std::string privat_name);
+    void show_chat2(struct my_struct &condata);
     void on_senmessage_privat_chat_button_clicked();
     void read();
 };

@@ -56,6 +56,7 @@ private slots:
 signals:
     void show_option_window();
     void create_privat_chat(struct my_struct &condata);
+    void create_privat_chat2(struct my_struct &condata);
 
 private slots:
     void changeEvent(QEvent*);

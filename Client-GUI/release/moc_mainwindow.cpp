@@ -21,8 +21,8 @@ QT_BEGIN_MOC_NAMESPACE
 QT_WARNING_PUSH
 QT_WARNING_DISABLE_DEPRECATED
 struct qt_meta_stringdata_MainWindow_t {
-    QByteArrayData data[20];
-    char stringdata0[315];
+    QByteArrayData data[21];
+    char stringdata0[335];
 };
 #define QT_MOC_LITERAL(idx, ofs, len) \
     Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \
@@ -37,25 +37,27 @@ QT_MOC_LITERAL(2, 30, 0), // ""
 QT_MOC_LITERAL(3, 31, 18), // "create_privat_chat"
 QT_MOC_LITERAL(4, 50, 10), // "my_struct&"
 QT_MOC_LITERAL(5, 61, 7), // "condata"
-QT_MOC_LITERAL(6, 69, 22), // "on_send_button_clicked"
-QT_MOC_LITERAL(7, 92, 25), // "on_connect_button_clicked"
-QT_MOC_LITERAL(8, 118, 24), // "on_option_button_clicked"
-QT_MOC_LITERAL(9, 143, 4), // "read"
-QT_MOC_LITERAL(10, 148, 11), // "changeEvent"
-QT_MOC_LITERAL(11, 160, 7), // "QEvent*"
-QT_MOC_LITERAL(12, 168, 17), // "trayIconActivated"
-QT_MOC_LITERAL(13, 186, 33), // "QSystemTrayIcon::ActivationRe..."
-QT_MOC_LITERAL(14, 220, 6), // "reason"
-QT_MOC_LITERAL(15, 227, 17), // "trayActionExecute"
-QT_MOC_LITERAL(16, 245, 18), // "setTrayIconActions"
-QT_MOC_LITERAL(17, 264, 12), // "showTrayIcon"
-QT_MOC_LITERAL(18, 277, 31), // "on_userlist_field_doubleClicked"
-QT_MOC_LITERAL(19, 309, 5) // "index"
+QT_MOC_LITERAL(6, 69, 19), // "create_privat_chat2"
+QT_MOC_LITERAL(7, 89, 22), // "on_send_button_clicked"
+QT_MOC_LITERAL(8, 112, 25), // "on_connect_button_clicked"
+QT_MOC_LITERAL(9, 138, 24), // "on_option_button_clicked"
+QT_MOC_LITERAL(10, 163, 4), // "read"
+QT_MOC_LITERAL(11, 168, 11), // "changeEvent"
+QT_MOC_LITERAL(12, 180, 7), // "QEvent*"
+QT_MOC_LITERAL(13, 188, 17), // "trayIconActivated"
+QT_MOC_LITERAL(14, 206, 33), // "QSystemTrayIcon::ActivationRe..."
+QT_MOC_LITERAL(15, 240, 6), // "reason"
+QT_MOC_LITERAL(16, 247, 17), // "trayActionExecute"
+QT_MOC_LITERAL(17, 265, 18), // "setTrayIconActions"
+QT_MOC_LITERAL(18, 284, 12), // "showTrayIcon"
+QT_MOC_LITERAL(19, 297, 31), // "on_userlist_field_doubleClicked"
+QT_MOC_LITERAL(20, 329, 5) // "index"
 
     },
     "MainWindow\0show_option_window\0\0"
     "create_privat_chat\0my_struct&\0condata\0"
-    "on_send_button_clicked\0on_connect_button_clicked\0"
+    "create_privat_chat2\0on_send_button_clicked\0"
+    "on_connect_button_clicked\0"
     "on_option_button_clicked\0read\0changeEvent\0"
     "QEvent*\0trayIconActivated\0"
     "QSystemTrayIcon::ActivationReason\0"
@@ -71,31 +73,33 @@ static const uint qt_meta_data_MainWindow[] = {
        7,       // revision
        0,       // classname
        0,    0, // classinfo
-      12,   14, // methods
+      13,   14, // methods
        0,    0, // properties
        0,    0, // enums/sets
        0,    0, // constructors
        0,       // flags
-       2,       // signalCount
+       3,       // signalCount
 
  // signals: name, argc, parameters, tag, flags
-       1,    0,   74,    2, 0x06 /* Public */,
-       3,    1,   75,    2, 0x06 /* Public */,
+       1,    0,   79,    2, 0x06 /* Public */,
+       3,    1,   80,    2, 0x06 /* Public */,
+       6,    1,   83,    2, 0x06 /* Public */,
 
  // slots: name, argc, parameters, tag, flags
-       6,    0,   78,    2, 0x08 /* Private */,
-       7,    0,   79,    2, 0x08 /* Private */,
-       8,    0,   80,    2, 0x08 /* Private */,
-       9,    0,   81,    2, 0x08 /* Private */,
-      10,    1,   82,    2, 0x08 /* Private */,
-      12,    1,   85,    2, 0x08 /* Private */,
-      15,    0,   88,    2, 0x08 /* Private */,
-      16,    0,   89,    2, 0x08 /* Private */,
-      17,    0,   90,    2, 0x08 /* Private */,
-      18,    1,   91,    2, 0x08 /* Private */,
+       7,    0,   86,    2, 0x08 /* Private */,
+       8,    0,   87,    2, 0x08 /* Private */,
+       9,    0,   88,    2, 0x08 /* Private */,
+      10,    0,   89,    2, 0x08 /* Private */,
+      11,    1,   90,    2, 0x08 /* Private */,
+      13,    1,   93,    2, 0x08 /* Private */,
+      16,    0,   96,    2, 0x08 /* Private */,
+      17,    0,   97,    2, 0x08 /* Private */,
+      18,    0,   98,    2, 0x08 /* Private */,
+      19,    1,   99,    2, 0x08 /* Private */,
 
  // signals: parameters
     QMetaType::Void,
+    QMetaType::Void, 0x80000000 | 4,    5,
     QMetaType::Void, 0x80000000 | 4,    5,
 
  // slots: parameters
@@ -103,12 +107,12 @@ static const uint qt_meta_data_MainWindow[] = {
     QMetaType::Void,
     QMetaType::Void,
     QMetaType::Void,
-    QMetaType::Void, 0x80000000 | 11,    2,
-    QMetaType::Void, 0x80000000 | 13,   14,
+    QMetaType::Void, 0x80000000 | 12,    2,
+    QMetaType::Void, 0x80000000 | 14,   15,
     QMetaType::Void,
     QMetaType::Void,
     QMetaType::Void,
-    QMetaType::Void, QMetaType::QModelIndex,   19,
+    QMetaType::Void, QMetaType::QModelIndex,   20,
 
        0        // eod
 };
@@ -121,16 +125,17 @@ void MainWindow::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, 
         switch (_id) {
         case 0: _t->show_option_window(); break;
         case 1: _t->create_privat_chat((*reinterpret_cast< my_struct(*)>(_a[1]))); break;
-        case 2: _t->on_send_button_clicked(); break;
-        case 3: _t->on_connect_button_clicked(); break;
-        case 4: _t->on_option_button_clicked(); break;
-        case 5: _t->read(); break;
-        case 6: _t->changeEvent((*reinterpret_cast< QEvent*(*)>(_a[1]))); break;
-        case 7: _t->trayIconActivated((*reinterpret_cast< QSystemTrayIcon::ActivationReason(*)>(_a[1]))); break;
-        case 8: _t->trayActionExecute(); break;
-        case 9: _t->setTrayIconActions(); break;
-        case 10: _t->showTrayIcon(); break;
-        case 11: _t->on_userlist_field_doubleClicked((*reinterpret_cast< const QModelIndex(*)>(_a[1]))); break;
+        case 2: _t->create_privat_chat2((*reinterpret_cast< my_struct(*)>(_a[1]))); break;
+        case 3: _t->on_send_button_clicked(); break;
+        case 4: _t->on_connect_button_clicked(); break;
+        case 5: _t->on_option_button_clicked(); break;
+        case 6: _t->read(); break;
+        case 7: _t->changeEvent((*reinterpret_cast< QEvent*(*)>(_a[1]))); break;
+        case 8: _t->trayIconActivated((*reinterpret_cast< QSystemTrayIcon::ActivationReason(*)>(_a[1]))); break;
+        case 9: _t->trayActionExecute(); break;
+        case 10: _t->setTrayIconActions(); break;
+        case 11: _t->showTrayIcon(); break;
+        case 12: _t->on_userlist_field_doubleClicked((*reinterpret_cast< const QModelIndex(*)>(_a[1]))); break;
         default: ;
         }
     } else if (_c == QMetaObject::IndexOfMethod) {
@@ -147,6 +152,13 @@ void MainWindow::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, 
             typedef void (MainWindow::*_t)(my_struct & );
             if (*reinterpret_cast<_t *>(func) == static_cast<_t>(&MainWindow::create_privat_chat)) {
                 *result = 1;
+                return;
+            }
+        }
+        {
+            typedef void (MainWindow::*_t)(my_struct & );
+            if (*reinterpret_cast<_t *>(func) == static_cast<_t>(&MainWindow::create_privat_chat2)) {
+                *result = 2;
                 return;
             }
         }
@@ -178,13 +190,13 @@ int MainWindow::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     if (_id < 0)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
-        if (_id < 12)
+        if (_id < 13)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 12;
+        _id -= 13;
     } else if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
-        if (_id < 12)
+        if (_id < 13)
             *reinterpret_cast<int*>(_a[0]) = -1;
-        _id -= 12;
+        _id -= 13;
     }
     return _id;
 }
@@ -200,6 +212,13 @@ void MainWindow::create_privat_chat(my_struct & _t1)
 {
     void *_a[] = { nullptr, const_cast<void*>(reinterpret_cast<const void*>(&_t1)) };
     QMetaObject::activate(this, &staticMetaObject, 1, _a);
+}
+
+// SIGNAL 2
+void MainWindow::create_privat_chat2(my_struct & _t1)
+{
+    void *_a[] = { nullptr, const_cast<void*>(reinterpret_cast<const void*>(&_t1)) };
+    QMetaObject::activate(this, &staticMetaObject, 2, _a);
 }
 struct qt_meta_stringdata_info_t {
     QByteArrayData data[7];
