@@ -722,10 +722,3 @@ void MainWindow::on_userlist_field_doubleClicked(const QModelIndex &index)
     condata.name_privat = QString(str).toStdString();
     emit create_privat_chat2(condata);
 }
-
-
-
-
-
-
-

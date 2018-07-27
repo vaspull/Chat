@@ -26,16 +26,17 @@ DEFINES += QT_DEPRECATED_WARNINGS
 SOURCES += \
         main.cpp \
         mainwindow.cpp \
-    dialog.cpp
-LIBS += -lws2_32
+        dialog.cpp
+
+LIBS    += -lws2_32
 
 HEADERS += \
         mainwindow.h \
-    dialog.h
+        dialog.h
 
 FORMS += \
         mainwindow.ui \
-    dialog.ui
+        dialog.ui
 
 RESOURCES += \
-    sources.qrc
+        sources.qrc

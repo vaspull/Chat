@@ -1,8 +1,0 @@
-<RCC>
-    <qresource prefix="/images">
-        <file>1.png</file>
-        <file>2.png</file>
-        <file>3.png</file>
-        <file>Iconka-Meow-Cat-tied.ico</file>
-    </qresource>
-</RCC>
