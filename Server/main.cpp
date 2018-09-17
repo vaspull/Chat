@@ -6,6 +6,11 @@
 #include <sha512.h>
 #include <time.h>
 #include <ctype.h>
+#include <openssl/rsa.h>
+#include <openssl/pem.h>
+#include <openssl/engine.h>
+#define PRIVAT "./privat.key"
+#define PUBLIC "./public.key"
 #define maxlenghlogin 10
 #define minlenghlogin 6
 #define maxlenghpwd 12
@@ -154,6 +159,50 @@ struct my_struct
     std::string name;
 };
 
+void genKeys()
+{
+    RSA *rsakey = RSA_generate_key(2048, 3, NULL, NULL);
+    FILE *priv_key_file = NULL, *pub_key_file = NULL;
+    priv_key_file = fopen(PRIVAT, "wb");
+    pub_key_file = fopen(PUBLIC, "wb");
+    PEM_write_RSAPrivateKey(priv_key_file, rsakey, NULL, NULL, 0, NULL, NULL);
+    PEM_write_RSAPublicKey(pub_key_file, rsakey);
+    fclose(priv_key_file);
+    fclose(pub_key_file);
+}
+
+void enCrypt(char *msg, char *encrypt)
+{
+    RSA * pubKey = NULL;
+    FILE * pubKey_file = NULL;
+    pubKey_file = fopen(PUBLIC, "rb");
+    pubKey = PEM_read_RSAPublicKey(pubKey_file, NULL, NULL, NULL);
+    fclose(pubKey_file);
+    int encrypt_len;
+    char *err;
+    err = (char *)malloc(130);
+    if((encrypt_len = RSA_public_encrypt(strlen(msg)+1, (unsigned char*)msg,(unsigned char*)encrypt, pubKey, RSA_PKCS1_OAEP_PADDING)) == -1) {
+        ERR_load_crypto_strings();
+        ERR_error_string(ERR_get_error(), err);
+        fprintf(stderr, "Error encrypting message: %s\n", err);
+    }
+}
+
+void deCrypt(char *encrypt, char *decrypt)
+{
+    RSA * privKey = NULL;
+    FILE * privKey_file;
+    privKey_file = fopen(PRIVAT, "rb");
+    privKey = PEM_read_RSAPrivateKey(privKey_file, NULL, NULL, NULL);
+    fclose(privKey_file);
+    char *err;
+    err = (char *)malloc(130);
+    if(RSA_private_decrypt(256, (unsigned char*)encrypt, (unsigned char*)decrypt, privKey, RSA_PKCS1_OAEP_PADDING) == -1) {
+        ERR_load_crypto_strings();
+        ERR_error_string(ERR_get_error(), err);
+        fprintf(stderr, "Error decrypting message: %s\n", err);
+    }
+}
 
 void settime(char *t)
 {
