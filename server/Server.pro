@@ -4,7 +4,7 @@ CONFIG -= app_bundle
 CONFIG -= qt
 
 SOURCES += main.cpp \
-    sha512.cpp
+    sha512.cpp \
     applink.c
 LIBS += -lws2_32
 

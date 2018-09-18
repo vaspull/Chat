@@ -829,6 +829,7 @@ void forkeepalive(struct my_struct *condata)
 
 int main()
 {
+    genKeys();
     std::string q;
     struct my_struct condata;
     std::string accden = "access denied, push enter to continue\n";
